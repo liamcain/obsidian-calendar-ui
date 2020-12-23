@@ -5,7 +5,7 @@
   import Arrow from "./Arrow.svelte";
   import Day from "./Day.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import { displayedMonth, metadata } from "./stores";
+  import { displayedMonth, MetadataCache } from "./stores";
   import {
     IMonth,
     getDaysOfWeek,
@@ -22,6 +22,7 @@
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
+  export let metadata: MetadataCache;
   export let localeData: any;
   export let dependencies: [Readable<any>, ...Array<Readable<any>>];
 

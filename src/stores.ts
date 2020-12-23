@@ -84,4 +84,3 @@ function createDisplayedMonthStore() {
 }
 
 export const displayedMonth = createDisplayedMonthStore();
-export const metadata = new MetadataCache();
