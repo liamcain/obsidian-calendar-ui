@@ -5,7 +5,6 @@
   "author": "liamcain",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
-  "svelte": "src/index.js",
   "license": "MIT",
   "scripts": {
     "lint": "svelte-check && eslint . --ext .ts",

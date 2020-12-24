@@ -18,11 +18,11 @@ export class MetadataCache {
     this.weeklyCache = {};
   }
 
-  addSource(source: CalendarSource): void {
+  public addSource(source: CalendarSource): void {
     this.source = source;
   }
 
-  setDay(date: Moment, metadata: IDayMetadata): void {
+  public setDay(date: Moment, metadata: IDayMetadata): void {
     const key = getDateUID(date);
     this.weeklyCache = Object.assign(
       {},
@@ -33,7 +33,7 @@ export class MetadataCache {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getDay(date: Moment, ..._args: any[]): IDayMetadata {
+  public getDay(date: Moment, ..._args: any[]): IDayMetadata {
     const dateStr = getDateUID(date);
     let value = this.dailyCache[dateStr];
     if (value) {
@@ -44,7 +44,7 @@ export class MetadataCache {
     return value;
   }
 
-  setWeek(date: Moment, metadata: IDayMetadata): void {
+  public setWeek(date: Moment, metadata: IDayMetadata): void {
     const key = getDateUID(date);
     this.weeklyCache = Object.assign(
       {},
@@ -55,7 +55,7 @@ export class MetadataCache {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getWeek(date: Moment, ..._args: any[]): IDayMetadata {
+  public getWeek(date: Moment, ..._args: any[]): IDayMetadata {
     const dateStr = getDateUID(date);
     let value = this.weeklyCache[dateStr];
     if (value) {
@@ -66,14 +66,14 @@ export class MetadataCache {
     return value;
   }
 
-  reset(): void {
+  public reset(): void {
     this.dailyCache = {};
     this.weeklyCache = {};
   }
 }
 
 function createDisplayedMonthStore() {
-  const store = writable<Moment>(null);
+  const store = writable<Moment>(window.moment());
   return {
     reset: () => store.set(window.moment()),
     increment: () => store.update((month) => month.clone().add(1, "months")),
