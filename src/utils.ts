@@ -1,26 +1,14 @@
 import type { Moment } from "moment";
 import * as os from "os";
 
-import { IMetadataStore, getDay, getWeek, IDayMetadata } from "./metadata";
-
-export interface IWeek {
-  days: Moment[];
-  weekNum: number;
-}
-
-export type IMonth = IWeek[];
-
-export interface IDayWithMeta {
-  day: Moment;
-  metadata: IDayMetadata;
-}
-
-interface IWeekWithMeta {
-  days: IDayWithMeta[];
-  metadata: IDayMetadata;
-}
-
-export type IMonthWithMeta = IWeekWithMeta[];
+import { getDay, getWeek } from "./metadata";
+import type {
+  IDayWithMeta,
+  IMetadataStore,
+  IMonth,
+  IMonthWithMeta,
+  IWeek,
+} from "./types";
 
 export function clamp(
   num: number,
@@ -98,5 +86,6 @@ export function getMetadataForMonth(
       day,
       metadata: getDay(metadata, day),
     })),
+    weekNum: week.weekNum,
   }));
 }

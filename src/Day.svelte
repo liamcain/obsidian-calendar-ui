@@ -2,8 +2,8 @@
   import type { Moment } from "moment";
 
   import Dot from "./Dot.svelte";
-  import type { IDayMetadata } from "./metadata";
   import { displayedMonth } from "./stores";
+  import type { IDayMetadata } from "./types";
   import { isMetaPressed } from "./utils";
 
   export let date: Moment;

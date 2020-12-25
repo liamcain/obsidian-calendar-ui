@@ -1,49 +1,20 @@
 import type { Moment } from "moment";
 import { getDateUID } from "obsidian-daily-notes-interface";
-import { writable, Writable } from "svelte/store";
+import { writable } from "svelte/store";
 
-export interface IDot {
-  color: string;
-  isFilled: boolean;
-}
+import type {
+  CalendarSource,
+  IDayMetadata,
+  IWeekMetadata,
+  IWritableMetadata,
+  IMetadataStore,
+} from "./types";
 
-export interface IDayMetadata {
-  classes?: string[];
-  dataAttributes?: string[];
-  dots: Promise<IDot[]>;
-}
-
-export interface IWeekMetadata {
-  classes?: string[];
-  dataAttributes?: string[];
-  dots: Promise<IDot[]>;
-}
-
-export abstract class CalendarSource {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getDailyMetadata(date: Moment, ...args: any[]): IDayMetadata;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getWeeklyMetadata(date: Moment, ...args: any[]): IDayMetadata;
-}
-
-export interface IMetadataStore {
-  dailyCache: Record<string, IDayMetadata>;
-  weeklyCache: Record<string, IWeekMetadata>;
-  source: CalendarSource;
-}
-
-interface IWritableMetadata extends Writable<IMetadataStore> {
-  addSource: (source: CalendarSource) => void;
-  setDay: (date: Moment, metadata: IDayMetadata) => void;
-  setWeek: (date: Moment, metadata: IDayMetadata) => void;
-  reset: () => void;
-}
-
-export function createMetadataCache(): IWritableMetadata {
+export function createMetadataCache(source: CalendarSource): IWritableMetadata {
   const store = writable<IMetadataStore>({
     dailyCache: {},
     weeklyCache: {},
-    source: null,
+    source,
   });
 
   const addSource = (source: CalendarSource): void => {

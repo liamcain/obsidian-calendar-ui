@@ -7,13 +7,17 @@
   import WeekNum from "./WeekNum.svelte";
   import { createMetadataCache } from "./metadata";
   import { displayedMonth } from "./stores";
-  import {
+  import type {
+    CalendarSource,
     IMonth,
+    IMonthWithMeta,
+    IWritableMetadata,
+  } from "./types";
+  import {
     getDaysOfWeek,
     getMetadataForMonth,
     getMonth,
     isWeekend,
-    IMonthWithMeta,
   } from "./utils";
 
   export let today: Moment = window.moment();
@@ -24,10 +28,11 @@
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
+  export let sources: CalendarSource;
   export let localeData: any;
   // export let dependencies: [Readable<any>, ...Array<Readable<any>>];
 
-  let metadata = createMetadataCache();
+  let metadata: IWritableMetadata;
   // const dependencyStore = derived(dependencies, (values) => values);
 
   let month: IMonth;
@@ -37,6 +42,7 @@
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
 
+  $: metadata = createMetadataCache(sources);
   $: month = getMonth($displayedMonth, localeData);
   $: monthData = getMetadataForMonth(month, $metadata);
   $: daysOfWeek = getDaysOfWeek(localeData);

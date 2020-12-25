@@ -1,5 +1,5 @@
 import Calendar from "./Calendar.svelte";
-import { CalendarSource, IMetadataStore } from "./metadata";
+import type { CalendarSource, IMetadataStore } from "./types";
 
 export { Calendar, CalendarSource };
 export type { IMetadataStore };

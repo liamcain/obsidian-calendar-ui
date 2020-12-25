@@ -2,8 +2,8 @@
   import type { Moment } from "moment";
 
   import Dot from "./Dot.svelte";
-  import type { IWeekMetadata } from "./metadata";
-  import { getStartOfWeek, IDayWithMeta, isMetaPressed } from "./utils";
+  import { getStartOfWeek, isMetaPressed } from "./utils";
+  import type { IDayWithMeta, IWeekMetadata } from "./types";
 
   export let weekNum: number;
   export let days: IDayWithMeta[];
