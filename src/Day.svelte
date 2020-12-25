@@ -2,7 +2,7 @@
   import type { Moment } from "moment";
 
   import Dot from "./Dot.svelte";
-  import type { IDayMetadata } from "./CalendarSource";
+  import type { IDayMetadata } from "./metadata";
   import { displayedMonth } from "./stores";
   import { isMetaPressed } from "./utils";
 

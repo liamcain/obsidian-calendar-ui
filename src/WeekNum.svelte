@@ -2,11 +2,11 @@
   import type { Moment } from "moment";
 
   import Dot from "./Dot.svelte";
-  import type { IWeekMetadata } from "./CalendarSource";
-  import { getStartOfWeek, isMetaPressed } from "./utils";
+  import type { IWeekMetadata } from "./metadata";
+  import { getStartOfWeek, IDayWithMeta, isMetaPressed } from "./utils";
 
   export let weekNum: number;
-  export let days: Moment[];
+  export let days: IDayWithMeta[];
   export let metadata: IWeekMetadata;
 
   export let onHover: (date: Moment, targetEl: EventTarget) => void;

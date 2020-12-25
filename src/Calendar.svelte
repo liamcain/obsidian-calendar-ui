@@ -1,17 +1,19 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import { derived, Readable } from "svelte/store";
+  // import { Readable } from "svelte/store";
 
   import Arrow from "./Arrow.svelte";
   import Day from "./Day.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import { displayedMonth, MetadataCache } from "./stores";
+  import { createMetadataCache } from "./metadata";
+  import { displayedMonth } from "./stores";
   import {
     IMonth,
     getDaysOfWeek,
+    getMetadataForMonth,
     getMonth,
-    getStartOfWeek,
     isWeekend,
+    IMonthWithMeta,
   } from "./utils";
 
   export let today: Moment = window.moment();
@@ -22,19 +24,21 @@
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
-  export let metadata: MetadataCache;
   export let localeData: any;
-  export let dependencies: [Readable<any>, ...Array<Readable<any>>];
+  // export let dependencies: [Readable<any>, ...Array<Readable<any>>];
 
-  const dependencyStore = derived(dependencies, (values) => values);
+  let metadata = createMetadataCache();
+  // const dependencyStore = derived(dependencies, (values) => values);
 
   let month: IMonth;
+  let monthData: IMonthWithMeta;
   let daysOfWeek: string[];
 
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
 
   $: month = getMonth($displayedMonth, localeData);
+  $: monthData = getMetadataForMonth(month, $metadata);
   $: daysOfWeek = getDaysOfWeek(localeData);
 </script>
 
@@ -81,23 +85,23 @@
       </tr>
     </thead>
     <tbody>
-      {#each month as week}
+      {#each monthData as week}
         <tr>
           {#if showWeekNums}
             <WeekNum
-              {...week}
+              {...week.days}
               onClick="{onClickWeek}"
               onHover="{onHoverWeek}"
-              metadata="{metadata.getWeek(getStartOfWeek(week.days), $dependencyStore)}"
+              metadata="{week.metadata}"
             />
           {/if}
-          {#each week.days as date (date.format())}
+          {#each week.days as dayWithMeta (dayWithMeta.day.format())}
             <Day
               today="{today}"
-              date="{date}"
+              date="{dayWithMeta.day}"
               onClick="{onClickDay}"
               onHover="{onHoverDay}"
-              metadata="{metadata.getDay(date, $dependencyStore)}"
+              metadata="{dayWithMeta.metadata}"
             />
           {/each}
         </tr>

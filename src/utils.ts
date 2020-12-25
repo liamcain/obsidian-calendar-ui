@@ -1,12 +1,26 @@
 import type { Moment } from "moment";
 import * as os from "os";
 
+import { IMetadataStore, getDay, getWeek, IDayMetadata } from "./metadata";
+
 export interface IWeek {
   days: Moment[];
   weekNum: number;
 }
 
 export type IMonth = IWeek[];
+
+export interface IDayWithMeta {
+  day: Moment;
+  metadata: IDayMetadata;
+}
+
+interface IWeekWithMeta {
+  days: IDayWithMeta[];
+  metadata: IDayMetadata;
+}
+
+export type IMonthWithMeta = IWeekWithMeta[];
 
 export function clamp(
   num: number,
@@ -38,8 +52,8 @@ export function isWeekend(date: Moment): boolean {
   return date.isoWeekday() === 6 || date.isoWeekday() === 7;
 }
 
-export function getStartOfWeek(days: Moment[]): Moment {
-  return days[0].weekday(0);
+export function getStartOfWeek(days: IDayWithMeta[]): Moment {
+  return days[0].day.weekday(0);
 }
 
 /**
@@ -72,4 +86,17 @@ export function getMonth(
   }
 
   return month;
+}
+
+export function getMetadataForMonth(
+  month: IMonth,
+  metadata: IMetadataStore
+): IMonthWithMeta {
+  return month.map((week) => ({
+    metadata: getWeek(metadata, week.days[0]),
+    days: week.days.map((day) => ({
+      day,
+      metadata: getDay(metadata, day),
+    })),
+  }));
 }

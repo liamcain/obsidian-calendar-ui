@@ -2,8 +2,6 @@ import type { Moment } from "moment";
 import { SvelteComponentTyped } from "svelte";
 import { Readable, Writable } from "svelte/store";
 
-declare module "obsidian-calendar-ui";
-
 export interface IDot {
   color: string;
   isFilled: boolean;
@@ -41,7 +39,7 @@ export class MetadataCache {
   public reset(): void;
 }
 
-export default class Calendar extends SvelteComponentTyped<{
+export class Calendar extends SvelteComponentTyped<{
   metadata: MetadataCache;
   showWeekNums: boolean;
 

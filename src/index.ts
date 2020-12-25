@@ -1,5 +1,5 @@
 import Calendar from "./Calendar.svelte";
-export { MetadataCache } from "./stores";
-export { CalendarSource } from "./CalendarSource";
+import { CalendarSource, IMetadataStore } from "./metadata";
 
-export default Calendar;
+export { Calendar, CalendarSource };
+export type { IMetadataStore };
