@@ -23,10 +23,3 @@ export abstract class CalendarSource {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   abstract getWeeklyMetadata(date: Moment, ...args: any[]): IDayMetadata;
 }
-
-export interface IWeek {
-  days: Moment[];
-  weekNum: number;
-}
-
-export type IMonth = IWeek[];

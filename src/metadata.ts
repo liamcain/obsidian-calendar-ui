@@ -1,98 +1,63 @@
 import type { Moment } from "moment";
 import { getDateUID } from "obsidian-daily-notes-interface";
-import { writable } from "svelte/store";
+import { Writable, writable } from "svelte/store";
+
+import { createDisplayedMonthStore, DisplayMonthStore } from "./displayedMonth";
+import { createSelectedDate, SelectedDate } from "./selectedDate";
 
 import type {
   CalendarSource,
   IDayMetadata,
   IWeekMetadata,
-  IWritableMetadata,
-  IMetadataStore,
+  IWeek,
 } from "./types";
 
-export function createMetadataCache(source: CalendarSource): IWritableMetadata {
-  const store = writable<IMetadataStore>({
-    dailyCache: {},
-    weeklyCache: {},
-    source,
-  });
+export class MetadataCache {
+  public displayedMonth: DisplayMonthStore;
+  public selectedDate: SelectedDate;
 
-  const addSource = (source: CalendarSource): void => {
-    store.update((cache: IMetadataStore) => ({
-      ...cache,
-      source,
-    }));
-  };
+  private dailyCache: Record<string, Writable<IDayMetadata>>;
+  private weeklyCache: Record<string, Writable<IWeekMetadata>>;
+  private source: CalendarSource;
 
-  const setDay = (date: Moment, metadata: IDayMetadata): void => {
-    const dateKey = getDateUID(date);
-    store.update((cache: IMetadataStore) => ({
-      ...cache,
-      dailyCache: {
-        ...cache.dailyCache,
-        [dateKey]: metadata,
-      },
-    }));
-  };
+  constructor(source: CalendarSource) {
+    this.dailyCache = {};
+    this.weeklyCache = {};
+    this.source = source;
 
-  const setWeek = (date: Moment, metadata: IWeekMetadata): void => {
-    const dateKey = getDateUID(date);
-    store.update((cache: IMetadataStore) => ({
-      ...cache,
-      weeklyCache: {
-        ...cache.dailyCache,
-        [dateKey]: metadata,
-      },
-    }));
-  };
+    this.displayedMonth = createDisplayedMonthStore();
+    this.selectedDate = createSelectedDate();
+  }
 
-  const reset = (): void => {
-    store.update((cache: IMetadataStore) => ({
-      ...cache,
-      dailyCache: {},
-      weeklyCache: {},
-    }));
-  };
+  public refreshDay(date: Moment): void {
+    const key = getDateUID(date);
+    const value = this.source.getDailyMetadata(date);
 
-  return {
-    ...store,
-    addSource,
-    setDay,
-    setWeek,
-    reset,
-  };
+    if (this.dailyCache[key]) {
+      this.dailyCache[key].set(value);
+    } else {
+      this.dailyCache[key] = writable<IDayMetadata>(value);
+    }
+  }
+
+  public getDay(date: Moment): Writable<IDayMetadata> {
+    const dateStr = getDateUID(date);
+    return this.dailyCache[dateStr];
+  }
+
+  public refreshWeek(date: Moment): void {
+    const key = getDateUID(date);
+    const value = this.source.getWeeklyMetadata(date);
+
+    if (this.weeklyCache[key]) {
+      this.weeklyCache[key].set(value);
+    } else {
+      this.weeklyCache[key] = writable<IWeekMetadata>(value);
+    }
+  }
+
+  public getWeek(week: IWeek): Writable<IWeekMetadata> {
+    const dateStr = getDateUID(week.days[0]);
+    return this.weeklyCache[dateStr];
+  }
 }
-
-export const getDay = (
-  metadata: IMetadataStore,
-  date: Moment
-): IDayMetadata => {
-  const dateStr = getDateUID(date);
-  let value = metadata.dailyCache[dateStr];
-  if (value) {
-    return value;
-  }
-
-  // mutate object to avoid a rerender
-  value = metadata.source.getDailyMetadata(date);
-  metadata.dailyCache[dateStr] = value;
-
-  return value;
-};
-
-export const getWeek = (
-  metadata: IMetadataStore,
-  date: Moment
-): IDayMetadata => {
-  const dateStr = getDateUID(date);
-  let value = metadata.weeklyCache[dateStr];
-  if (value) {
-    return value;
-  }
-
-  // mutate object to avoid a rerender
-  value = metadata.source.getWeeklyMetadata(date);
-  metadata.weeklyCache[dateStr] = value;
-
-  return value;
-};

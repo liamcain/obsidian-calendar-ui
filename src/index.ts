@@ -1,19 +1,6 @@
 import Calendar from "./Calendar.svelte";
-import { createMetadataCache } from "./metadata";
-import {
-  CalendarSource,
-  IMetadataStore,
-  IDot,
-  IDayMetadata,
-  IWeekMetadata,
-  IWritableMetadata,
-} from "./types";
+import { MetadataCache } from "./metadata";
+import { CalendarSource, IDot, IDayMetadata, IWeekMetadata } from "./types";
 
-export { createMetadataCache, Calendar, CalendarSource };
-export type {
-  IDot,
-  IDayMetadata,
-  IMetadataStore,
-  IWeekMetadata,
-  IWritableMetadata,
-};
+export { MetadataCache, Calendar, CalendarSource };
+export type { IDot, IDayMetadata, IWeekMetadata };

@@ -1,13 +1,14 @@
 <script lang="ts">
   import type { Moment } from "moment";
+  import type { Writable } from "svelte/store";
 
   import Dot from "./Dot.svelte";
   import { getStartOfWeek, isMetaPressed } from "./utils";
-  import type { IDayWithMeta, IWeekMetadata } from "./types";
+  import type { IWeekMetadata } from "./types";
 
   export let weekNum: number;
-  export let days: IDayWithMeta[];
-  export let metadata: IWeekMetadata;
+  export let days: Moment[];
+  export let metadata: Writable<IWeekMetadata>;
 
   export let onHover: (date: Moment, targetEl: EventTarget) => void;
   export let onClick: (date: Moment, isMetaPressed: boolean) => void;
@@ -35,7 +36,7 @@
   >
     {weekNum}
     <div class="dot-container">
-      {#await metadata.dots then dots}
+      {#await $metadata.dots then dots}
         {#each dots as dot}
           <Dot {...dot} />
         {/each}

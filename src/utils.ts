@@ -1,14 +1,8 @@
 import type { Moment } from "moment";
 import * as os from "os";
 
-import { getDay, getWeek } from "./metadata";
-import type {
-  IDayWithMeta,
-  IMetadataStore,
-  IMonth,
-  IMonthWithMeta,
-  IWeek,
-} from "./types";
+import type { MetadataCache } from "./metadata";
+import type { IMonth, IWeek } from "./types";
 
 function isMacOS() {
   return os.platform() === "darwin";
@@ -27,8 +21,8 @@ export function isWeekend(date: Moment): boolean {
   return date.isoWeekday() === 6 || date.isoWeekday() === 7;
 }
 
-export function getStartOfWeek(days: IDayWithMeta[]): Moment {
-  return days[0].day.weekday(0);
+export function getStartOfWeek(days: Moment[]): Moment {
+  return days[0].weekday(0);
 }
 
 /**
@@ -37,6 +31,7 @@ export function getStartOfWeek(days: IDayWithMeta[]): Moment {
  */
 export function getMonth(
   displayedMonth: Moment,
+  metadata: MetadataCache,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ..._upstreamChanges: any[]
 ): IMonth {
@@ -53,29 +48,15 @@ export function getMonth(
         days: [],
         weekNum: date.week(),
       };
+      metadata.refreshWeek(date);
       month.push(week);
     }
+
+    metadata.refreshDay(date);
 
     week.days.push(date);
     date = date.clone().add(1, "days");
   }
 
   return month;
-}
-
-export function getMetadataForMonth(
-  month: IMonth,
-  metadata: IMetadataStore,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ..._args: any[]
-): IMonthWithMeta {
-  console.log("rebuilding metadata");
-  return month.map((week) => ({
-    metadata: getWeek(metadata, week.days[0]),
-    days: week.days.map((day) => ({
-      day,
-      metadata: getDay(metadata, day),
-    })),
-    weekNum: week.weekNum,
-  }));
 }

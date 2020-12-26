@@ -1,18 +1,12 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import { derived, Readable } from "svelte/store";
 
   import Arrow from "./Arrow.svelte";
   import Day from "./Day.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import { displayedMonth } from "./stores";
-  import type { IMonth, IMonthWithMeta, IWritableMetadata } from "./types";
-  import {
-    getDaysOfWeek,
-    getMetadataForMonth,
-    getMonth,
-    isWeekend,
-  } from "./utils";
+  import type { MetadataCache } from "./metadata";
+  import type { IMonth } from "./types";
+  import { getDaysOfWeek, getMonth, isWeekend } from "./utils";
 
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
@@ -20,26 +14,26 @@
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
   export let localeData: any;
-  export let dependencies: [Readable<any>, ...Array<Readable<any>>];
-  export let metadata: IWritableMetadata;
+  // export let dependencies: [Readable<any>, ...Array<Readable<any>>];
+  export let metadata: MetadataCache;
 
   export let showWeekNums: boolean = false;
   export let today: Moment = window.moment();
 
-  const dependencyStore = derived(dependencies, (values) => {
-    console.log("values", values);
-    return [...values];
-  });
+  let { displayedMonth } = metadata;
+
+  // const dependencyStore = derived(dependencies, (values) => {
+  //   console.log("values", values);
+  //   return [...values];
+  // });
 
   let month: IMonth;
-  let monthData: IMonthWithMeta;
   let daysOfWeek: string[];
 
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
 
-  $: month = getMonth($displayedMonth, localeData);
-  $: monthData = getMetadataForMonth(month, $metadata, $dependencyStore);
+  $: month = getMonth($displayedMonth, metadata, localeData);
   $: daysOfWeek = getDaysOfWeek(localeData);
 </script>
 
@@ -86,23 +80,25 @@
       </tr>
     </thead>
     <tbody>
-      {#each monthData as week}
+      {#each month as week}
         <tr>
           {#if showWeekNums}
             <WeekNum
               {...week}
               onClick="{onClickWeek}"
               onHover="{onHoverWeek}"
-              metadata="{week.metadata}"
+              metadata="{metadata.getWeek(week)}"
             />
           {/if}
-          {#each week.days as dayWithMeta (dayWithMeta.day.format())}
+          {#each week.days as day (day.format())}
             <Day
               today="{today}"
-              date="{dayWithMeta.day}"
+              displayedMonth="{displayedMonth}"
+              selectedDate="{metadata.selectedDate}"
+              date="{day}"
               onClick="{onClickDay}"
               onHover="{onHoverDay}"
-              metadata="{dayWithMeta.metadata}"
+              metadata="{metadata.getDay(day)}"
             />
           {/each}
         </tr>

@@ -1,7 +1,13 @@
 import type { Moment } from "moment";
-import { writable } from "svelte/store";
+import { writable, Readable } from "svelte/store";
 
-function createDisplayedMonthStore() {
+export interface DisplayMonthStore extends Readable<Moment> {
+  reset: () => void;
+  increment: () => void;
+  decrement: () => void;
+}
+
+export function createDisplayedMonthStore(): DisplayMonthStore {
   const store = writable<Moment>(window.moment());
   return {
     reset: () => store.set(window.moment()),
@@ -11,5 +17,3 @@ function createDisplayedMonthStore() {
     ...store,
   };
 }
-
-export const displayedMonth = createDisplayedMonthStore();
