@@ -19,6 +19,13 @@ export interface IWeekMetadata {
   dots: Promise<IDot[]>;
 }
 
+export abstract class CalendarSource {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  abstract getDailyMetadata(date: Moment, ...args: any[]): IDayMetadata;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  abstract getWeeklyMetadata(date: Moment, ...args: any[]): IDayMetadata;
+}
+
 type Store<T> = Readable<T> | Writable<T>;
 
 export abstract class CalendarSource {
@@ -28,19 +35,15 @@ export abstract class CalendarSource {
   abstract getWeeklyMetadata(date: Moment, ...args: any[]): IDayMetadata;
 }
 
-export class MetadataCache {
-  public addSource(source: CalendarSource): void;
-  public setDay(date: Moment, metadata: IDayMetadata): void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public getDay(date: Moment, ..._args: any[]): IDayMetadata;
-  public setWeek(date: Moment, metadata: IDayMetadata): void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public getWeek(date: Moment, ..._args: any[]): IDayMetadata;
-  public reset(): void;
+export interface IWritableMetadata extends Writable<IMetadataStore> {
+  addSource: (source: CalendarSource) => void;
+  setDay: (date: Moment, metadata: IDayMetadata) => void;
+  setWeek: (date: Moment, metadata: IDayMetadata) => void;
+  reset: () => void;
 }
 
+export function createMetadataCache(source: CalendarSource): IWritableMetadata;
 export class Calendar extends SvelteComponentTyped<{
-  metadata: MetadataCache;
   showWeekNums: boolean;
 
   onHoverDay: (date: Moment, targetEl: EventTarget) => void;
@@ -48,6 +51,7 @@ export class Calendar extends SvelteComponentTyped<{
   onClickDay: (date: Moment, isMetaPressed: boolean) => void;
   onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
+  metadata: IWritableMetadata;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   localeData?: any;
   today?: Moment;

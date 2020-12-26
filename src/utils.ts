@@ -65,8 +65,11 @@ export function getMonth(
 
 export function getMetadataForMonth(
   month: IMonth,
-  metadata: IMetadataStore
+  metadata: IMetadataStore,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ..._args: any[]
 ): IMonthWithMeta {
+  console.log("rebuilding metadata");
   return month.map((week) => ({
     metadata: getWeek(metadata, week.days[0]),
     days: week.days.map((day) => ({
