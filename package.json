@@ -12,6 +12,7 @@
     "build": "npm run lint && rollup -c"
   },
   "dependencies": {
+    "memoizee": "0.4.14",
     "obsidian-daily-notes-interface": "0.4.0",
     "svelte": "3.31.0",
     "tslib": "2.0.3"

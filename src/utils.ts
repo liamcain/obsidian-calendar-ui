@@ -1,7 +1,6 @@
 import type { Moment } from "moment";
 import * as os from "os";
 
-import type { MetadataCache } from "./metadata";
 import type { IMonth, IWeek } from "./types";
 
 function isMacOS() {
@@ -29,12 +28,7 @@ export function getStartOfWeek(days: Moment[]): Moment {
  * Generate a 2D array of daily information to power
  * the calendar view.
  */
-export function getMonth(
-  displayedMonth: Moment,
-  metadata: MetadataCache,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ..._upstreamChanges: any[]
-): IMonth {
+export function getMonth(displayedMonth: Moment): IMonth {
   const month = [];
   let week: IWeek;
 
@@ -48,11 +42,8 @@ export function getMonth(
         days: [],
         weekNum: date.week(),
       };
-      metadata.refreshWeek(date);
       month.push(week);
     }
-
-    metadata.refreshDay(date);
 
     week.days.push(date);
     date = date.clone().add(1, "days");

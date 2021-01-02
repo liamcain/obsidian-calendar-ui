@@ -1,65 +1,56 @@
 <script lang="ts">
   import type { Moment } from "moment";
+  import type { TFile } from 'obsidian';
+  import { getDailyNote} from 'obsidian-daily-notes-interface';
 
-  import Arrow from "./Arrow.svelte";
   import Day from "./Day.svelte";
+import Nav from "./Nav.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import type { MetadataCache } from "./metadata";
-  import type { IMonth } from "./types";
+import { _getDailyMetadata, _getWeeklyMetadata } from "./metadata";
+  import type { ICalendarSource, IMonth } from "./types";
   import { getDaysOfWeek, getMonth, isWeekend } from "./utils";
 
+  // Settings
+  export let showWeekNums: boolean = false;
+
+  // Event Handlers
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
-  export let localeData: any;
-  // export let dependencies: [Readable<any>, ...Array<Readable<any>>];
-  export let metadata: MetadataCache;
+  // External sources (All optional)
+  export let activeFile: TFile;
+  export let dailyNotes: Record<string, TFile> = {};
+  export let sources: ICalendarSource[];
 
-  export let showWeekNums: boolean = false;
+  // Override-able local state
   export let today: Moment = window.moment();
-
-  let { displayedMonth } = metadata;
-
-  // const dependencyStore = derived(dependencies, (values) => {
-  //   console.log("values", values);
-  //   return [...values];
-  // });
+  export let displayedMonth = today;
 
   let month: IMonth;
   let daysOfWeek: string[];
 
-  // Get the word 'Today' but localized to the current language
-  const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
+  $: month = getMonth(displayedMonth);
+  $: daysOfWeek = getDaysOfWeek();
 
-  $: month = getMonth($displayedMonth, metadata, localeData);
-  $: daysOfWeek = getDaysOfWeek(localeData);
+  // Exports
+  export function incrementDisplayedMonth() {
+    displayedMonth = displayedMonth.clone().add(1, 'month');
+  }
+
+  export function decrementDisplayedMonth() {
+    displayedMonth = displayedMonth.clone().subtract(1, 'month');
+  }
+
+  export function resetDisplayedMonth() {
+    displayedMonth = today.clone();
+  }
 </script>
 
 <svelte:options immutable />
 <div id="calendar-container" class="container">
-  <div class="nav">
-    <h3 class="title" on:click="{displayedMonth.reset}">
-      <span class="month">{$displayedMonth.format('MMM')}</span>
-      <span class="year">{$displayedMonth.format('YYYY')}</span>
-    </h3>
-    <div class="right-nav">
-      <Arrow
-        direction="left"
-        onClick="{displayedMonth.decrement}"
-        tooltip="Previous Month"
-      />
-      <div class="reset-button" on:click="{displayedMonth.reset}">
-        {todayDisplayStr}
-      </div>
-      <Arrow
-        direction="right"
-        onClick="{displayedMonth.increment}"
-        tooltip="Next Month"
-      />
-    </div>
-  </div>
+  <Nav {today} {displayedMonth} {incrementDisplayedMonth} {decrementDisplayedMonth} {resetDisplayedMonth} />
   <table class="calendar">
     <colgroup>
       {#if showWeekNums}
@@ -85,20 +76,21 @@
           {#if showWeekNums}
             <WeekNum
               {...week}
+              metadata="{_getWeeklyMetadata(sources, null, week.days[0])}"
               onClick="{onClickWeek}"
               onHover="{onHoverWeek}"
-              metadata="{metadata.getWeek(week)}"
             />
           {/if}
           {#each week.days as day (day.format())}
             <Day
+              date="{day}"
+              note="{getDailyNote(day, dailyNotes)}"
               today="{today}"
               displayedMonth="{displayedMonth}"
-              selectedDate="{metadata.selectedDate}"
-              date="{day}"
+              activeFile="{activeFile}"
               onClick="{onClickDay}"
               onHover="{onHoverDay}"
-              metadata="{metadata.getDay(day)}"
+              metadata="{_getDailyMetadata(sources, getDailyNote(day, dailyNotes), day)}"
             />
           {/each}
         </tr>
@@ -133,46 +125,6 @@
     text-align: center;
   }
 
-  .nav {
-    align-items: center;
-    display: flex;
-    margin: 0.6em 0 1em;
-    padding: 0 8px;
-    width: 100%;
-  }
-
-  .title {
-    color: var(--color-text-title);
-    font-size: 1.5em;
-    margin: 0;
-  }
-
-  .month {
-    font-weight: 500;
-    text-transform: capitalize;
-  }
-
-  .year {
-    color: var(--interactive-accent);
-  }
-
-  .right-nav {
-    display: flex;
-    justify-content: center;
-    margin-left: auto;
-  }
-
-  .reset-button {
-    border-radius: 4px;
-    color: var(--text-muted);
-    font-size: 0.7em;
-    font-weight: 600;
-    letter-spacing: 1px;
-    margin: 0 4px;
-    padding: 0px 4px;
-    text-transform: uppercase;
-  }
-
   .weekend {
     background-color: var(--color-background-weekend);
   }
@@ -187,7 +139,7 @@
     color: var(--color-text-heading);
     font-size: 0.6em;
     letter-spacing: 1px;
-    padding: 4px 8px;
+    padding: 4px;
     text-transform: uppercase;
   }
 </style>

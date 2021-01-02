@@ -1,22 +1,23 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { Writable } from "svelte/store";
+  import type {TFile } from 'obsidian';
 
   import Dot from "./Dot.svelte";
   import { getStartOfWeek, isMetaPressed } from "./utils";
   import type { IWeekMetadata } from "./types";
 
+    // Properties
   export let weekNum: number;
   export let days: Moment[];
-  export let metadata: Writable<IWeekMetadata>;
-
+  export let note: TFile;
   export let onHover: (date: Moment, targetEl: EventTarget) => void;
   export let onClick: (date: Moment, isMetaPressed: boolean) => void;
+  export let metadata: Promise<IWeekMetadata> | null;
+
+  // Global state
+  export let activeFile: TFile = null;
 
   let startOfWeek: Moment;
-  let isActive: boolean;
-
-  // $: isActive = $activeFile && weeklyNote === $activeFile;
   $: startOfWeek = getStartOfWeek(days);
 </script>
 
@@ -24,7 +25,8 @@
 <td>
   <div
     class="week-num"
-    class:active="{isActive}"
+    class:has-note={!!note}
+    class:active="{activeFile && activeFile === note}"
     on:click="{(e) => {
       onClick(startOfWeek, isMetaPressed(e));
     }}"
@@ -36,11 +38,13 @@
   >
     {weekNum}
     <div class="dot-container">
-      {#await $metadata.dots then dots}
-        {#each dots as dot}
-          <Dot {...dot} />
-        {/each}
-      {/await}
+      {#if metadata}
+        {#await metadata then resolvedMeta}
+          {#each resolvedMeta.dots as dot}
+            <Dot {...dot} />
+          {/each}
+        {/await}
+      {/if}
     </div>
   </div>
 </td>

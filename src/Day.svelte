@@ -1,28 +1,31 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { Readable, Writable } from "svelte/store";
+  import type { TFile } from 'obsidian';
 
   import Dot from "./Dot.svelte";
-  import type { DisplayMonthStore } from "./displayedMonth";
   import type { IDayMetadata } from "./types";
   import { isMetaPressed } from "./utils";
 
+  // Properties
+  export let note: TFile | null;
   export let date: Moment;
-  export let today: Moment;
+  export let metadata: Promise<IDayMetadata> | null;
   export let onHover: (date: Moment, targetEl: EventTarget) => void;
   export let onClick: (date: Moment, isMetaPressed: boolean) => void;
 
-  export let metadata: Writable<IDayMetadata>;
-  export let displayedMonth: DisplayMonthStore;
-  export let selectedDate: Readable<Moment>;
+  // Global state
+  export let today: Moment;
+  export let displayedMonth: Moment = null;
+  export let activeFile: TFile = null;
 </script>
 
 <svelte:options immutable />
 <td>
   <div
-    class="{`day ${$metadata.classes.join(' ')}`}"
-    class:adjacent-month="{!date.isSame($displayedMonth, 'month')}"
-    class:active="{date.isSame($selectedDate, 'day')}"
+    class="day"
+    class:has-note={!!note}
+    class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
+    class:active="{activeFile && activeFile === note}"
     class:today="{date.isSame(today, 'day')}"
     on:click="{(e) => {
       onClick(date, isMetaPressed(e));
@@ -34,13 +37,14 @@
     }}"
   >
     {date.format('D')}
-
     <div class="dot-container">
-      {#await $metadata.dots then dots}
-        {#each dots as dot}
-          <Dot {...dot} />
-        {/each}
-      {/await}
+      {#if metadata}
+        {#await metadata then resolvedMeta}
+          {#each resolvedMeta.dots as dot}
+            <Dot {...dot} />
+          {/each}
+        {/await}
+      {/if}
     </div>
   </div>
 </td>
