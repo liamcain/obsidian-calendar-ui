@@ -1,13 +1,12 @@
 <script lang="ts">
+  import memoize from "micro-memoize";
   import type { Moment } from "moment";
-  import type { TFile } from 'obsidian';
-  import { getDailyNote} from 'obsidian-daily-notes-interface';
 
   import Day from "./Day.svelte";
-import Nav from "./Nav.svelte";
+  import Nav from "./Nav.svelte";
   import WeekNum from "./WeekNum.svelte";
-import { _getDailyMetadata, _getWeeklyMetadata } from "./metadata";
-  import type { ICalendarSource, IMonth } from "./types";
+  import { metadataReducer } from "./metadata";
+  import type { ICalendarSource, IDayMetadata, IMonth } from "./types";
   import { getDaysOfWeek, getMonth, isWeekend } from "./utils";
 
   // Settings
@@ -20,9 +19,8 @@ import { _getDailyMetadata, _getWeeklyMetadata } from "./metadata";
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
   // External sources (All optional)
-  export let activeFile: TFile;
-  export let dailyNotes: Record<string, TFile> = {};
   export let sources: ICalendarSource[];
+  export let selectedId: string;
 
   // Override-able local state
   export let today: Moment = window.moment();
@@ -30,17 +28,34 @@ import { _getDailyMetadata, _getWeeklyMetadata } from "./metadata";
 
   let month: IMonth;
   let daysOfWeek: string[];
+  let dailyMetadataFetchers: ((date: Moment) => Promise<IDayMetadata>)[];
+  let weeklyMetadataFetchers: ((date: Moment) => Promise<IDayMetadata>)[];
 
   $: month = getMonth(displayedMonth);
   $: daysOfWeek = getDaysOfWeek();
+  $: dailyMetadataFetchers = sources.map((source) => {
+    const fn = memoize(source.getDailyMetadata, {
+      maxSize: 50,
+      isPromise: true,
+      isMatchingKey: source.getDailyCacheKey,
+    });
+    return fn;
+  });
+  $: weeklyMetadataFetchers = sources.map((source) =>
+    memoize(source.getWeeklyMetadata, {
+      maxSize: 50,
+      isPromise: true,
+      isMatchingKey: source.getWeeklyCacheKey,
+    })
+  );
 
   // Exports
   export function incrementDisplayedMonth() {
-    displayedMonth = displayedMonth.clone().add(1, 'month');
+    displayedMonth = displayedMonth.clone().add(1, "month");
   }
 
   export function decrementDisplayedMonth() {
-    displayedMonth = displayedMonth.clone().subtract(1, 'month');
+    displayedMonth = displayedMonth.clone().subtract(1, "month");
   }
 
   export function resetDisplayedMonth() {
@@ -50,7 +65,13 @@ import { _getDailyMetadata, _getWeeklyMetadata } from "./metadata";
 
 <svelte:options immutable />
 <div id="calendar-container" class="container">
-  <Nav {today} {displayedMonth} {incrementDisplayedMonth} {decrementDisplayedMonth} {resetDisplayedMonth} />
+  <Nav
+    today="{today}"
+    displayedMonth="{displayedMonth}"
+    incrementDisplayedMonth="{incrementDisplayedMonth}"
+    decrementDisplayedMonth="{decrementDisplayedMonth}"
+    resetDisplayedMonth="{resetDisplayedMonth}"
+  />
   <table class="calendar">
     <colgroup>
       {#if showWeekNums}
@@ -71,30 +92,37 @@ import { _getDailyMetadata, _getWeeklyMetadata } from "./metadata";
       </tr>
     </thead>
     <tbody>
-      {#each month as week}
-        <tr>
-          {#if showWeekNums}
-            <WeekNum
-              {...week}
-              metadata="{_getWeeklyMetadata(sources, null, week.days[0])}"
-              onClick="{onClickWeek}"
-              onHover="{onHoverWeek}"
-            />
-          {/if}
-          {#each week.days as day (day.format())}
-            <Day
-              date="{day}"
-              note="{getDailyNote(day, dailyNotes)}"
-              today="{today}"
-              displayedMonth="{displayedMonth}"
-              activeFile="{activeFile}"
-              onClick="{onClickDay}"
-              onHover="{onHoverDay}"
-              metadata="{_getDailyMetadata(sources, getDailyNote(day, dailyNotes), day)}"
-            />
-          {/each}
-        </tr>
-      {/each}
+      <!-- update calendar on clock ticks -->
+      {#key today}
+        {#each month as week}
+          <tr>
+            {#if showWeekNums}
+              <WeekNum
+                {...week}
+                metadata="{metadataReducer(weeklyMetadataFetchers.map((fetch) =>
+                    fetch(week.days[0])
+                  ))}"
+                onClick="{onClickWeek}"
+                onHover="{onHoverWeek}"
+                selectedId="{selectedId}"
+              />
+            {/if}
+            {#each week.days as day (day.format())}
+              <Day
+                date="{day}"
+                today="{today}"
+                displayedMonth="{displayedMonth}"
+                onClick="{onClickDay}"
+                onHover="{onHoverDay}"
+                metadata="{metadataReducer(dailyMetadataFetchers.map((fetch) =>
+                    fetch(day)
+                  ))}"
+                selectedId="{selectedId}"
+              />
+            {/each}
+          </tr>
+        {/each}
+      {/key}
     </tbody>
   </table>
 </div>

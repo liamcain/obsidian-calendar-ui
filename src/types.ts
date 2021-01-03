@@ -1,5 +1,4 @@
 import type { Moment } from "moment";
-import type { TFile } from 'obsidian';
 
 export interface IDot {
   color: string;
@@ -19,8 +18,13 @@ export interface IWeekMetadata {
 }
 
 export interface ICalendarSource {
-  getDailyMetadata(file: TFile | null, date: Moment): Promise<IDayMetadata>;
-  getWeeklyMetadata(file: TFile | null, date: Moment): Promise<IWeekMetadata>;
+  getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  getWeeklyMetadata?: (date: Moment) => Promise<IWeekMetadata>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getDailyCacheKey: (args: any[], callArgs: any[]) => boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getWeeklyCacheKey: (args: any[], callArgs: any[]) => boolean;
 }
 
 export interface IWeek {

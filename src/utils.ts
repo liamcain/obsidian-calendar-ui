@@ -51,3 +51,7 @@ export function getMonth(displayedMonth: Moment): IMonth {
 
   return month;
 }
+
+export function getDateUID(date: Moment, granularity: "day" | "week"): string {
+  return `${granularity}-${date.clone().startOf(granularity).format()}`;
+}

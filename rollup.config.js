@@ -23,6 +23,8 @@ export default {
       browser: true,
       dedupe: ["svelte"],
     }),
-    commonjs(),
+    commonjs({
+      include: /node_modules/,
+    })
   ],
 };

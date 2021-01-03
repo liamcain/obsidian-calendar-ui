@@ -1,5 +1,4 @@
 import type { Moment } from "moment";
-import type { TFile } from 'obsidian';
 import { SvelteComponentTyped } from "svelte";
 
 export interface IDot {
@@ -20,8 +19,13 @@ export interface IWeekMetadata {
 }
 
 export interface ICalendarSource {
-  getDailyMetadata(file: TFile | null, date: Moment): Promise<IDayMetadata>;
-  getWeeklyMetadata(file: TFile | null, date: Moment): Promise<IWeekMetadata>;
+  getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  getWeeklyMetadata?: (date: Moment) => Promise<IWeekMetadata>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getDailyCacheKey: (args: any[], callArgs: any[]) => boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getWeeklyCacheKey: (args: any[], callArgs: any[]) => boolean;
 }
 
 export class Calendar extends SvelteComponentTyped<{
@@ -35,8 +39,7 @@ export class Calendar extends SvelteComponentTyped<{
   onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
   // External sources
-  dailyNotes?: Record<string, TFile>;
-  activeFile?: TFile | null;
+  selectedId?: string | null;
   sources?: ICalendarSource[];
 
   // Override-able local state

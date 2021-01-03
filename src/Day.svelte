@@ -1,13 +1,11 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { TFile } from 'obsidian';
 
   import Dot from "./Dot.svelte";
   import type { IDayMetadata } from "./types";
-  import { isMetaPressed } from "./utils";
+  import { getDateUID, isMetaPressed } from "./utils";
 
   // Properties
-  export let note: TFile | null;
   export let date: Moment;
   export let metadata: Promise<IDayMetadata> | null;
   export let onHover: (date: Moment, targetEl: EventTarget) => void;
@@ -16,37 +14,52 @@
   // Global state
   export let today: Moment;
   export let displayedMonth: Moment = null;
-  export let activeFile: TFile = null;
+  export let selectedId: string = null;
 </script>
 
 <svelte:options immutable />
 <td>
-  <div
-    class="day"
-    class:has-note={!!note}
-    class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
-    class:active="{activeFile && activeFile === note}"
-    class:today="{date.isSame(today, 'day')}"
-    on:click="{(e) => {
-      onClick(date, isMetaPressed(e));
-    }}"
-    on:pointerover="{(e) => {
-      if (isMetaPressed(e)) {
-        onHover(date, e.target);
-      }
-    }}"
-  >
-    {date.format('D')}
-    <div class="dot-container">
-      {#if metadata}
-        {#await metadata then resolvedMeta}
+  {#if metadata}
+    {#await metadata then resolvedMeta}
+      <div
+        class="{`day ${resolvedMeta.classes.join(' ')}`}"
+        class:selected="{selectedId === getDateUID(date, 'day')}"
+        class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
+        class:today="{date.isSame(today, 'day')}"
+        on:click="{(e) => {
+          onClick(date, isMetaPressed(e));
+        }}"
+        on:pointerover="{(e) => {
+          if (isMetaPressed(e)) {
+            onHover(date, e.target);
+          }
+        }}"
+      >
+        {date.format('D')}
+        <div class="dot-container">
           {#each resolvedMeta.dots as dot}
             <Dot {...dot} />
           {/each}
-        {/await}
-      {/if}
+        </div>
+      </div>
+    {/await}
+  {:else}
+    <div
+      class="day"
+      class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
+      class:today="{date.isSame(today, 'day')}"
+      on:click="{(e) => {
+        onClick(date, isMetaPressed(e));
+      }}"
+      on:pointerover="{(e) => {
+        if (isMetaPressed(e)) {
+          onHover(date, e.target);
+        }
+      }}"
+    >
+      {date.format('D')}
     </div>
-  </div>
+  {/if}
 </td>
 
 <style>
@@ -67,7 +80,7 @@
     background-color: var(--interactive-hover);
   }
 
-  .day.active:hover {
+  .day.selected:hover {
     background-color: var(--interactive-accent-hover);
   }
 
@@ -79,8 +92,8 @@
     color: var(--color-text-today);
   }
 
-  .active,
-  .active.today {
+  .selected,
+  .selected.today {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
   }
