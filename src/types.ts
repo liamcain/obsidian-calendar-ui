@@ -8,20 +8,12 @@ export interface IDot {
 export interface IDayMetadata {
   classes?: string[];
   dataAttributes?: string[];
-  dots: Promise<IDot[]>;
+  dots?: IDot[];
 }
 
-export interface IWeekMetadata {
-  classes?: string[];
-  dataAttributes?: string[];
-  dots: Promise<IDot[]>;
-}
-
-export abstract class CalendarSource {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getDailyMetadata(date: Moment, ...args: any[]): IDayMetadata;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getWeeklyMetadata(date: Moment, ...args: any[]): IDayMetadata;
+export interface ICalendarSource {
+  getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  getWeeklyMetadata?: (date: Moment) => Promise<IDayMetadata>;
 }
 
 export interface IWeek {

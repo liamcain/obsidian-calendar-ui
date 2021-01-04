@@ -1,6 +1,14 @@
-import Calendar from "./Calendar.svelte";
-import { MetadataCache } from "./metadata";
-import { CalendarSource, IDot, IDayMetadata, IWeekMetadata } from "./types";
+import Calendar from "./components/Calendar.svelte";
+import type { ICalendarSource, IDot, IDayMetadata } from "./types";
+import type { App } from "obsidian";
+import type { Moment } from "moment";
 
-export { MetadataCache, Calendar, CalendarSource };
-export type { IDot, IDayMetadata, IWeekMetadata };
+declare global {
+  interface Window {
+    app: App;
+    moment: () => Moment;
+  }
+}
+
+export { Calendar };
+export type { ICalendarSource, IDot, IDayMetadata };

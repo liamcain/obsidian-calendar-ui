@@ -1,6 +1,5 @@
 import type { Moment } from "moment";
 import { SvelteComponentTyped } from "svelte";
-import { Readable, Writable } from "svelte/store";
 
 export interface IDot {
   color: string;
@@ -10,54 +9,29 @@ export interface IDot {
 export interface IDayMetadata {
   classes?: string[];
   dataAttributes?: string[];
-  dots: Promise<IDot[]>;
+  dots?: IDot[];
 }
 
-export interface IWeekMetadata {
-  classes?: string[];
-  dataAttributes?: string[];
-  dots: Promise<IDot[]>;
+export interface ICalendarSource {
+  getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  getWeeklyMetadata?: (date: Moment) => Promise<IDayMetadata>;
 }
 
-export abstract class CalendarSource {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getDailyMetadata(date: Moment, ...args: any[]): IDayMetadata;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getWeeklyMetadata(date: Moment, ...args: any[]): IDayMetadata;
-}
-
-type Store<T> = Readable<T> | Writable<T>;
-
-export abstract class CalendarSource {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getDailyMetadata(date: Moment, ...args: any[]): IDayMetadata;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract getWeeklyMetadata(date: Moment, ...args: any[]): IDayMetadata;
-}
-
-export class MetadataCache {
-  public displayedMonth: DisplayMonthStore;
-  public selectedDate: Writable<Moment>;
-
-  constructor(source: CalendarSource);
-
-  public refreshDay(date: Moment): void;
-  public getDay(date: Moment): Writable<IDayMetadata>;
-  public refreshWeek(date: Moment): void;
-  public getWeek(week: IWeek): Writable<IDayMetadata>;
-}
 export class Calendar extends SvelteComponentTyped<{
+  // Settings
   showWeekNums: boolean;
 
-  onHoverDay: (date: Moment, targetEl: EventTarget) => void;
-  onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
-  onClickDay: (date: Moment, isMetaPressed: boolean) => void;
-  onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
+  // Event Handlers
+  onHoverDay?: (date: Moment, targetEl: EventTarget) => void;
+  onHoverWeek?: (date: Moment, targetEl: EventTarget) => void;
+  onClickDay?: (date: Moment, isMetaPressed: boolean) => void;
+  onClickWeek?: (date: Moment, isMetaPressed: boolean) => void;
 
-  metadata: MetadataCache;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  localeData?: any;
+  // External sources
+  selectedId?: string | null;
+  sources?: ICalendarSource[];
+
+  // Override-able local state
   today?: Moment;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dependencies?: [Store<any>, ...Array<Store<any>>];
+  displayedMonth?: Moment;
 }> {}
