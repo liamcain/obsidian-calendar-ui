@@ -26,7 +26,7 @@
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
 
   // External sources (All optional)
-  export let sources: ICalendarSource[];
+  export let sources: ICalendarSource[] = [];
   export let selectedId: string;
 
   // Override-able local state
