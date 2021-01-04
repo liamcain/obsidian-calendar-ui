@@ -9,23 +9,12 @@ export interface IDot {
 export interface IDayMetadata {
   classes?: string[];
   dataAttributes?: string[];
-  dots: IDot[];
-}
-
-export interface IWeekMetadata {
-  classes?: string[];
-  dataAttributes?: string[];
-  dots: IDot[];
+  dots?: IDot[];
 }
 
 export interface ICalendarSource {
   getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
-  getWeeklyMetadata?: (date: Moment) => Promise<IWeekMetadata>;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getDailyCacheKey: (args: any[], callArgs: any[]) => boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getWeeklyCacheKey: (args: any[], callArgs: any[]) => boolean;
+  getWeeklyMetadata?: (date: Moment) => Promise<IDayMetadata>;
 }
 
 export class Calendar extends SvelteComponentTyped<{
@@ -33,10 +22,10 @@ export class Calendar extends SvelteComponentTyped<{
   showWeekNums: boolean;
 
   // Event Handlers
-  onHoverDay: (date: Moment, targetEl: EventTarget) => void;
-  onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
-  onClickDay: (date: Moment, isMetaPressed: boolean) => void;
-  onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
+  onHoverDay?: (date: Moment, targetEl: EventTarget) => void;
+  onHoverWeek?: (date: Moment, targetEl: EventTarget) => void;
+  onClickDay?: (date: Moment, isMetaPressed: boolean) => void;
+  onClickWeek?: (date: Moment, isMetaPressed: boolean) => void;
 
   // External sources
   selectedId?: string | null;

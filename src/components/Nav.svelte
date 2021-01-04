@@ -1,43 +1,42 @@
 <script lang="ts">
-    import type { Moment } from 'moment';
+  import type { Moment } from "moment";
 
   import Arrow from "./Arrow.svelte";
 
-export let displayedMonth: Moment;
-export let today: Moment;
+  export let displayedMonth: Moment;
+  export let today: Moment;
 
-export let resetDisplayedMonth: () => void;
-export let incrementDisplayedMonth: () => void;
-export let decrementDisplayedMonth: () => void;
-
+  export let resetDisplayedMonth: () => void;
+  export let incrementDisplayedMonth: () => void;
+  export let decrementDisplayedMonth: () => void;
 
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
 </script>
 
-  <div class="nav">
-    <h3 class="title" on:click="{resetDisplayedMonth}">
-      <span class="month">{displayedMonth.format('MMM')}</span>
-      <span class="year">{displayedMonth.format('YYYY')}</span>
-    </h3>
-    <div class="right-nav">
-      <Arrow
-        direction="left"
-        onClick="{decrementDisplayedMonth}"
-        tooltip="Previous Month"
-      />
-      <div class="reset-button" on:click="{resetDisplayedMonth}">
-        {todayDisplayStr}
-      </div>
-      <Arrow
-        direction="right"
-        onClick="{incrementDisplayedMonth}"
-        tooltip="Next Month"
-      />
+<div class="nav">
+  <h3 class="title" on:click="{resetDisplayedMonth}">
+    <span class="month">{displayedMonth.format('MMM')}</span>
+    <span class="year">{displayedMonth.format('YYYY')}</span>
+  </h3>
+  <div class="right-nav">
+    <Arrow
+      direction="left"
+      onClick="{decrementDisplayedMonth}"
+      tooltip="Previous Month"
+    />
+    <div class="reset-button" on:click="{resetDisplayedMonth}">
+      {todayDisplayStr}
     </div>
+    <Arrow
+      direction="right"
+      onClick="{incrementDisplayedMonth}"
+      tooltip="Next Month"
+    />
   </div>
+</div>
 
-  <style>
+<style>
   .nav {
     align-items: center;
     display: flex;
@@ -77,5 +76,4 @@ export let decrementDisplayedMonth: () => void;
     padding: 0px 4px;
     text-transform: uppercase;
   }
-
-  </style>
+</style>

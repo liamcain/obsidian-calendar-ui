@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { Moment } from "moment";
+  import { getDateUID } from "obsidian-daily-notes-interface";
 
   import Dot from "./Dot.svelte";
-  import { getDateUID, getStartOfWeek, isMetaPressed } from "./utils";
-  import type { IWeekMetadata } from "./types";
+  import type { IDayMetadata } from "../types";
+  import { getStartOfWeek, isMetaPressed } from "../utils";
 
   // Properties
   export let weekNum: number;
@@ -12,9 +13,9 @@
     date: Moment,
     targetEl: EventTarget,
     isMetaPressed: boolean
-  ) => void;
-  export let onClick: (date: Moment, isMetaPressed: boolean) => void;
-  export let metadata: Promise<IWeekMetadata> | null;
+  ) => boolean;
+  export let onClick: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let metadata: Promise<IDayMetadata> | null;
 
   // Global state;
   export let selectedId: string = null;
@@ -48,8 +49,8 @@
   {:else}
     <div
       class="week-num"
-      on:click="{(e) => onClick(startOfWeek, isMetaPressed(e))}"
-      on:pointerover="{(e) => onHover(startOfWeek, e.target, isMetaPressed(e))}"
+      on:click="{(e) => (typeof onClick === 'function' ? onClick(startOfWeek, isMetaPressed(e)) : undefined)}"
+      on:pointerover="{(e) => (typeof onHover === 'function' ? onHover(startOfWeek, e.target, isMetaPressed(e)) : undefined)}"
     >
       {weekNum}
       <div class="dot-container">

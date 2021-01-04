@@ -1,22 +1,29 @@
 <script lang="ts">
-  import memoize from "micro-memoize";
   import type { Moment } from "moment";
 
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import { metadataReducer } from "./metadata";
-  import type { ICalendarSource, IDayMetadata, IMonth } from "./types";
-  import { getDaysOfWeek, getMonth, isWeekend } from "./utils";
+  import { getDailyMetadata, getWeeklyMetadata } from "../metadata";
+  import type { ICalendarSource, IMonth } from "../types";
+  import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
 
   // Settings
   export let showWeekNums: boolean = false;
 
   // Event Handlers
-  export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
-  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
-  export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
-  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
+  export let onHoverDay: (
+    date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ) => boolean;
+  export let onHoverWeek: (
+    date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ) => boolean;
+  export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
 
   // External sources (All optional)
   export let sources: ICalendarSource[];
@@ -28,26 +35,9 @@
 
   let month: IMonth;
   let daysOfWeek: string[];
-  let dailyMetadataFetchers: ((date: Moment) => Promise<IDayMetadata>)[];
-  let weeklyMetadataFetchers: ((date: Moment) => Promise<IDayMetadata>)[];
 
   $: month = getMonth(displayedMonth);
   $: daysOfWeek = getDaysOfWeek();
-  $: dailyMetadataFetchers = sources.map((source) => {
-    const fn = memoize(source.getDailyMetadata, {
-      maxSize: 50,
-      isPromise: true,
-      isMatchingKey: source.getDailyCacheKey,
-    });
-    return fn;
-  });
-  $: weeklyMetadataFetchers = sources.map((source) =>
-    memoize(source.getWeeklyMetadata, {
-      maxSize: 50,
-      isPromise: true,
-      isMatchingKey: source.getWeeklyCacheKey,
-    })
-  );
 
   // Exports
   export function incrementDisplayedMonth() {
@@ -99,9 +89,7 @@
             {#if showWeekNums}
               <WeekNum
                 {...week}
-                metadata="{metadataReducer(weeklyMetadataFetchers.map((fetch) =>
-                    fetch(week.days[0])
-                  ))}"
+                metadata="{getWeeklyMetadata(sources, week.days[0])}"
                 onClick="{onClickWeek}"
                 onHover="{onHoverWeek}"
                 selectedId="{selectedId}"
@@ -114,9 +102,7 @@
                 displayedMonth="{displayedMonth}"
                 onClick="{onClickDay}"
                 onHover="{onHoverDay}"
-                metadata="{metadataReducer(dailyMetadataFetchers.map((fetch) =>
-                    fetch(day)
-                  ))}"
+                metadata="{getDailyMetadata(sources, day)}"
                 selectedId="{selectedId}"
               />
             {/each}
