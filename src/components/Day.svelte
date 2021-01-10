@@ -13,6 +13,7 @@
     isMetaPressed: boolean
   ) => boolean;
   export let onClick: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onContextMenu: (date: Moment, event: MouseEvent) => boolean;
 
   // Global state
   export let today: Moment;
@@ -32,6 +33,7 @@
         today="{today}"
         onClick="{onClick}"
         onHover="{onHover}"
+        onContextMenu="{onContextMenu}"
       />
     {/await}
   {:else}

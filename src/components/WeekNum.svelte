@@ -9,13 +9,16 @@
   // Properties
   export let weekNum: number;
   export let days: Moment[];
+  export let metadata: Promise<IDayMetadata> | null;
+
+  // Event handlers
   export let onHover: (
     date: Moment,
     targetEl: EventTarget,
     isMetaPressed: boolean
   ) => boolean;
   export let onClick: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let metadata: Promise<IDayMetadata> | null;
+  export let onContextMenu: (date: Moment, event: MouseEvent) => boolean;
 
   // Global state;
   export let selectedId: string = null;
@@ -49,8 +52,9 @@
   {:else}
     <div
       class="week-num"
-      on:click="{(e) => (typeof onClick === 'function' ? onClick(startOfWeek, isMetaPressed(e)) : undefined)}"
-      on:pointerover="{(e) => (typeof onHover === 'function' ? onHover(startOfWeek, e.target, isMetaPressed(e)) : undefined)}"
+      on:click="{onClick && ((e) => onClick(days[0], isMetaPressed(e)))}"
+      on:contextmenu="{onContextMenu && ((e) => onContextMenu(days[0], e))}"
+      on:pointerover="{onHover && ((e) => onHover(days[0], e.target, isMetaPressed(e)))}"
     >
       {weekNum}
       <div class="dot-container">

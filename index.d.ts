@@ -26,6 +26,8 @@ export class Calendar extends SvelteComponentTyped<{
   onHoverWeek?: (date: Moment, targetEl: EventTarget) => void;
   onClickDay?: (date: Moment, isMetaPressed: boolean) => void;
   onClickWeek?: (date: Moment, isMetaPressed: boolean) => void;
+  onContextMenuDay?: (date: Moment, event: MouseEvent) => boolean;
+  onContextMenuWeek?: (date: Moment, event: MouseEvent) => boolean;
 
   // External sources
   selectedId?: string | null;

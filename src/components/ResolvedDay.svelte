@@ -15,6 +15,7 @@
     isMetaPressed: boolean
   ) => boolean;
   export let onClick: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onContextMenu: (date: Moment, event: MouseEvent) => boolean;
 
   // Global state
   export let today: Moment;
@@ -28,8 +29,9 @@
   class:selected="{selectedId === getDateUID(date, 'day')}"
   class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
   class:today="{date.isSame(today, 'day')}"
-  on:click="{(e) => (typeof onClick === 'function' ? onClick(date, isMetaPressed(e)) : undefined)}"
-  on:pointerover="{(e) => (typeof onHover === 'function' ? onHover(date, e.target, isMetaPressed(e)) : undefined)}"
+  on:click="{onClick && ((e) => onClick(date, isMetaPressed(e)))}"
+  on:contextmenu="{onContextMenu && ((e) => onContextMenu(date, e))}"
+  on:pointerover="{onHover && ((e) => onHover(date, e.target, isMetaPressed(e)))}"
 >
   {date.format('D')}
   <div class="dot-container">

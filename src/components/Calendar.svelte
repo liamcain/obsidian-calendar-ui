@@ -22,6 +22,8 @@
     targetEl: EventTarget,
     isMetaPressed: boolean
   ) => boolean;
+  export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
+  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
 
@@ -36,7 +38,7 @@
   let month: IMonth;
   let daysOfWeek: string[];
 
-  $: month = getMonth(displayedMonth);
+  $: month = getMonth(displayedMonth, today);
   $: daysOfWeek = getDaysOfWeek(today);
 
   // Exports
@@ -91,6 +93,7 @@
                 {...week}
                 metadata="{getWeeklyMetadata(sources, week.days[0])}"
                 onClick="{onClickWeek}"
+                onContextMenu="{onContextMenuWeek}"
                 onHover="{onHoverWeek}"
                 selectedId="{selectedId}"
               />
@@ -101,6 +104,7 @@
                 today="{today}"
                 displayedMonth="{displayedMonth}"
                 onClick="{onClickDay}"
+                onContextMenu="{onContextMenuDay}"
                 onHover="{onHoverDay}"
                 metadata="{getDailyMetadata(sources, day)}"
                 selectedId="{selectedId}"
