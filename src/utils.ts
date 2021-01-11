@@ -28,10 +28,7 @@ export function getStartOfWeek(days: Moment[]): Moment {
  * Generate a 2D array of daily information to power
  * the calendar view.
  */
-export function getMonth(
-  displayedMonth: Moment,
-  _today: Moment = null
-): IMonth {
+export function getMonth(displayedMonth: Moment): IMonth {
   const month = [];
   let week: IWeek;
 

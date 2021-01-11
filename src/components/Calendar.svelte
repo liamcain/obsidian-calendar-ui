@@ -38,7 +38,7 @@
   let month: IMonth;
   let daysOfWeek: string[];
 
-  $: month = getMonth(displayedMonth, today);
+  $: month = getMonth(displayedMonth);
   $: daysOfWeek = getDaysOfWeek(today);
 
   // Exports
