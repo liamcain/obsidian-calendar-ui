@@ -1,3 +1,5 @@
+<svelte:options immutable />
+
 <script lang="ts">
   import type { Moment } from "moment";
   import { getDateUID } from "obsidian-daily-notes-interface";
@@ -27,15 +29,15 @@
   $: startOfWeek = getStartOfWeek(days);
 </script>
 
-<svelte:options immutable />
 <td>
   {#if metadata}
     {#await metadata then resolvedMeta}
       <div
         class="{`week-num ${resolvedMeta.classes.join(' ')}`}"
-        class:selected="{selectedId === getDateUID(days[0], 'week')}"
+        class:active="{selectedId === getDateUID(days[0], 'week')}"
         on:click="{(e) => onClick(startOfWeek, isMetaPressed(e))}"
-        on:pointerover="{(e) => onHover(startOfWeek, e.target, isMetaPressed(e))}"
+        on:pointerover="{(e) =>
+          onHover(startOfWeek, e.target, isMetaPressed(e))}"
       >
         {weekNum}
         <div class="dot-container">
@@ -54,7 +56,8 @@
       class="week-num"
       on:click="{onClick && ((e) => onClick(days[0], isMetaPressed(e)))}"
       on:contextmenu="{onContextMenu && ((e) => onContextMenu(days[0], e))}"
-      on:pointerover="{onHover && ((e) => onHover(days[0], e.target, isMetaPressed(e)))}"
+      on:pointerover="{onHover &&
+        ((e) => onHover(days[0], e.target, isMetaPressed(e)))}"
     >
       {weekNum}
       <div class="dot-container">
@@ -92,11 +95,11 @@
     background-color: var(--interactive-hover);
   }
 
-  .week-num.selected:hover {
+  .week-num.active:hover {
     background-color: var(--interactive-accent-hover);
   }
 
-  .selected {
+  .active {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
   }

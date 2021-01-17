@@ -1,3 +1,5 @@
+<svelte:options immutable />
+
 <script lang="ts">
   import type { Moment } from "moment";
   import { getDateUID } from "obsidian-daily-notes-interface";
@@ -23,17 +25,17 @@
   export let selectedId: string = null;
 </script>
 
-<svelte:options immutable />
 <div
   class="{`day ${metadata.classes.join(' ')}`}"
-  class:selected="{selectedId === getDateUID(date, 'day')}"
+  class:active="{selectedId === getDateUID(date, 'day')}"
   class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
   class:today="{date.isSame(today, 'day')}"
   on:click="{onClick && ((e) => onClick(date, isMetaPressed(e)))}"
   on:contextmenu="{onContextMenu && ((e) => onContextMenu(date, e))}"
-  on:pointerover="{onHover && ((e) => onHover(date, e.target, isMetaPressed(e)))}"
+  on:pointerover="{onHover &&
+    ((e) => onHover(date, e.target, isMetaPressed(e)))}"
 >
-  {date.format('D')}
+  {date.format("D")}
   <div class="dot-container">
     {#each metadata.dots as dot}
       <Dot {...dot} />
@@ -59,7 +61,7 @@
     background-color: var(--interactive-hover);
   }
 
-  .day.selected:hover {
+  .day.active:hover {
     background-color: var(--interactive-accent-hover);
   }
 
@@ -72,8 +74,8 @@
   }
 
   .day:active,
-  .selected,
-  .selected.today {
+  .active,
+  .active.today {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
   }
