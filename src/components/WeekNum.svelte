@@ -5,6 +5,7 @@
   import { getDateUID } from "obsidian-daily-notes-interface";
 
   import Dot from "./Dot.svelte";
+  import MetadataResolver from "./MetadataResolver.svelte";
   import type { IDayMetadata } from "../types";
   import { getStartOfWeek, isMetaPressed } from "../utils";
 
@@ -30,50 +31,30 @@
 </script>
 
 <td>
-  {#if metadata}
-    {#await metadata then resolvedMeta}
-      <div
-        class="{`week-num ${resolvedMeta.classes.join(' ')}`}"
-        class:active="{selectedId === getDateUID(days[0], 'week')}"
-        on:click="{(e) => onClick(startOfWeek, isMetaPressed(e))}"
-        on:pointerover="{(e) =>
-          onHover(startOfWeek, e.target, isMetaPressed(e))}"
-      >
-        {weekNum}
-        <div class="dot-container">
-          {#if metadata}
-            {#await metadata then resolvedMeta}
-              {#each resolvedMeta.dots as dot}
-                <Dot {...dot} />
-              {/each}
-            {/await}
-          {/if}
-        </div>
-      </div>
-    {/await}
-  {:else}
+  <MetadataResolver metadata="{metadata}" let:metadata>
     <div
-      class="week-num"
-      on:click="{onClick && ((e) => onClick(days[0], isMetaPressed(e)))}"
+      class="{`week-num ${metadata.classes.join(' ')}`}"
+      class:active="{selectedId === getDateUID(days[0], 'week')}"
+      on:click="{onClick && ((e) => onClick(startOfWeek, isMetaPressed(e)))}"
       on:contextmenu="{onContextMenu && ((e) => onContextMenu(days[0], e))}"
       on:pointerover="{onHover &&
-        ((e) => onHover(days[0], e.target, isMetaPressed(e)))}"
+        ((e) => onHover(startOfWeek, e.target, isMetaPressed(e)))}"
     >
       {weekNum}
       <div class="dot-container">
-        {#if metadata}
-          {#await metadata then resolvedMeta}
-            {#each resolvedMeta.dots as dot}
-              <Dot {...dot} />
-            {/each}
-          {/await}
-        {/if}
+        {#each metadata.dots as dot}
+          <Dot {...dot} />
+        {/each}
       </div>
     </div>
-  {/if}
+  </MetadataResolver>
 </td>
 
 <style>
+  td {
+    border-right: 1px solid var(--background-modifier-border);
+  }
+
   .week-num {
     background-color: var(--color-background-weeknum);
     border-radius: 4px;
@@ -85,10 +66,6 @@
     text-align: center;
     transition: background-color 0.1s ease-in, color 0.1s ease-in;
     vertical-align: baseline;
-  }
-
-  td {
-    border-right: 1px solid var(--background-modifier-border);
   }
 
   .week-num:hover {
