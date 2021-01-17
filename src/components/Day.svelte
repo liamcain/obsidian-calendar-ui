@@ -3,6 +3,7 @@
 <script lang="ts">
   import type { Moment } from "moment";
   import { getDateUID } from "obsidian-daily-notes-interface";
+
   import Dot from "./Dot.svelte";
   import MetadataResolver from "./MetadataResolver.svelte";
   import type { IDayMetadata } from "../types";
