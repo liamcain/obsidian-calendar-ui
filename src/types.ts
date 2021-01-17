@@ -1,6 +1,7 @@
 import type { Moment } from "moment";
 
 export interface IDot {
+  className: string;
   color: string;
   isFilled: boolean;
 }

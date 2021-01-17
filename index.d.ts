@@ -13,6 +13,7 @@ export type IWeekStartOption =
   | "locale";
 
 export interface IDot {
+  className: string;
   color: string;
   isFilled: boolean;
 }
