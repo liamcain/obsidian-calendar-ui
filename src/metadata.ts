@@ -23,7 +23,8 @@ async function metadataReducer(
 
 export function getDailyMetadata(
   sources: ICalendarSource[],
-  date: Moment
+  date: Moment,
+  ..._args: unknown[]
 ): Promise<IDayMetadata> {
   return metadataReducer(
     sources.map((source) => source.getDailyMetadata(date))
@@ -32,7 +33,8 @@ export function getDailyMetadata(
 
 export function getWeeklyMetadata(
   sources: ICalendarSource[],
-  date: Moment
+  date: Moment,
+  ..._args: unknown[]
 ): Promise<IDayMetadata> {
   return metadataReducer(
     sources.map((source) => source.getWeeklyMetadata(date))

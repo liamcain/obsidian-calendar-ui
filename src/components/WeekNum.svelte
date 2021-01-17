@@ -1,21 +1,27 @@
+<svelte:options immutable />
+
 <script lang="ts">
   import type { Moment } from "moment";
   import { getDateUID } from "obsidian-daily-notes-interface";
 
   import Dot from "./Dot.svelte";
+  import MetadataResolver from "./MetadataResolver.svelte";
   import type { IDayMetadata } from "../types";
   import { getStartOfWeek, isMetaPressed } from "../utils";
 
   // Properties
   export let weekNum: number;
   export let days: Moment[];
+  export let metadata: Promise<IDayMetadata> | null;
+
+  // Event handlers
   export let onHover: (
     date: Moment,
     targetEl: EventTarget,
     isMetaPressed: boolean
   ) => boolean;
   export let onClick: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let metadata: Promise<IDayMetadata> | null;
+  export let onContextMenu: (date: Moment, event: MouseEvent) => boolean;
 
   // Global state;
   export let selectedId: string = null;
@@ -24,49 +30,31 @@
   $: startOfWeek = getStartOfWeek(days);
 </script>
 
-<svelte:options immutable />
 <td>
-  {#if metadata}
-    {#await metadata then resolvedMeta}
-      <div
-        class="{`week-num ${resolvedMeta.classes.join(' ')}`}"
-        class:selected="{selectedId === getDateUID(days[0], 'week')}"
-        on:click="{(e) => onClick(startOfWeek, isMetaPressed(e))}"
-        on:pointerover="{(e) => onHover(startOfWeek, e.target, isMetaPressed(e))}"
-      >
-        {weekNum}
-        <div class="dot-container">
-          {#if metadata}
-            {#await metadata then resolvedMeta}
-              {#each resolvedMeta.dots as dot}
-                <Dot {...dot} />
-              {/each}
-            {/await}
-          {/if}
-        </div>
-      </div>
-    {/await}
-  {:else}
+  <MetadataResolver metadata="{metadata}" let:metadata>
     <div
-      class="week-num"
-      on:click="{(e) => (typeof onClick === 'function' ? onClick(startOfWeek, isMetaPressed(e)) : undefined)}"
-      on:pointerover="{(e) => (typeof onHover === 'function' ? onHover(startOfWeek, e.target, isMetaPressed(e)) : undefined)}"
+      class="{`week-num ${metadata.classes.join(' ')}`}"
+      class:active="{selectedId === getDateUID(days[0], 'week')}"
+      on:click="{onClick && ((e) => onClick(startOfWeek, isMetaPressed(e)))}"
+      on:contextmenu="{onContextMenu && ((e) => onContextMenu(days[0], e))}"
+      on:pointerover="{onHover &&
+        ((e) => onHover(startOfWeek, e.target, isMetaPressed(e)))}"
     >
       {weekNum}
       <div class="dot-container">
-        {#if metadata}
-          {#await metadata then resolvedMeta}
-            {#each resolvedMeta.dots as dot}
-              <Dot {...dot} />
-            {/each}
-          {/await}
-        {/if}
+        {#each metadata.dots as dot}
+          <Dot {...dot} />
+        {/each}
       </div>
     </div>
-  {/if}
+  </MetadataResolver>
 </td>
 
 <style>
+  td {
+    border-right: 1px solid var(--background-modifier-border);
+  }
+
   .week-num {
     background-color: var(--color-background-weeknum);
     border-radius: 4px;
@@ -80,19 +68,15 @@
     vertical-align: baseline;
   }
 
-  td {
-    border-right: 1px solid var(--background-modifier-border);
-  }
-
   .week-num:hover {
     background-color: var(--interactive-hover);
   }
 
-  .week-num.selected:hover {
+  .week-num.active:hover {
     background-color: var(--interactive-accent-hover);
   }
 
-  .selected {
+  .active {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
   }

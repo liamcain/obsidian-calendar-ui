@@ -1,3 +1,5 @@
+<svelte:options immutable />
+
 <script lang="ts">
   import type { Moment } from "moment";
 
@@ -7,6 +9,11 @@
   import { getDailyMetadata, getWeeklyMetadata } from "../metadata";
   import type { ICalendarSource, IMonth } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
+  import type { ILocaleOverride, IWeekStartOption } from "../localization";
+
+  // Localization
+  export let weekStart: IWeekStartOption = "locale";
+  export let localeOverride: ILocaleOverride;
 
   // Settings
   export let showWeekNums: boolean = false;
@@ -22,6 +29,8 @@
     targetEl: EventTarget,
     isMetaPressed: boolean
   ) => boolean;
+  export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
+  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
 
@@ -36,8 +45,8 @@
   let month: IMonth;
   let daysOfWeek: string[];
 
-  $: month = getMonth(displayedMonth);
-  $: daysOfWeek = getDaysOfWeek(today);
+  $: month = getMonth(displayedMonth, weekStart, localeOverride);
+  $: daysOfWeek = getDaysOfWeek(today, localeOverride);
 
   // Exports
   export function incrementDisplayedMonth() {
@@ -53,7 +62,6 @@
   }
 </script>
 
-<svelte:options immutable />
 <div id="calendar-container" class="container">
   <Nav
     today="{today}"
@@ -82,33 +90,32 @@
       </tr>
     </thead>
     <tbody>
-      <!-- update calendar on clock ticks -->
-      {#key today}
-        {#each month as week}
-          <tr>
-            {#if showWeekNums}
-              <WeekNum
-                {...week}
-                metadata="{getWeeklyMetadata(sources, week.days[0])}"
-                onClick="{onClickWeek}"
-                onHover="{onHoverWeek}"
-                selectedId="{selectedId}"
-              />
-            {/if}
-            {#each week.days as day (day.format())}
-              <Day
-                date="{day}"
-                today="{today}"
-                displayedMonth="{displayedMonth}"
-                onClick="{onClickDay}"
-                onHover="{onHoverDay}"
-                metadata="{getDailyMetadata(sources, day)}"
-                selectedId="{selectedId}"
-              />
-            {/each}
-          </tr>
-        {/each}
-      {/key}
+      {#each month as week (week.weekNum)}
+        <tr>
+          {#if showWeekNums}
+            <WeekNum
+              {...week}
+              metadata="{getWeeklyMetadata(sources, week.days[0], today)}"
+              onClick="{onClickWeek}"
+              onContextMenu="{onContextMenuWeek}"
+              onHover="{onHoverWeek}"
+              selectedId="{selectedId}"
+            />
+          {/if}
+          {#each week.days as day (day.format())}
+            <Day
+              date="{day}"
+              today="{today}"
+              displayedMonth="{displayedMonth}"
+              onClick="{onClickDay}"
+              onContextMenu="{onContextMenuDay}"
+              onHover="{onHoverDay}"
+              metadata="{getDailyMetadata(sources, day, today)}"
+              selectedId="{selectedId}"
+            />
+          {/each}
+        </tr>
+      {/each}
     </tbody>
   </table>
 </div>
