@@ -8,13 +8,13 @@ async function metadataReducer(
   const meta = {
     dots: [],
     classes: [],
-    dataAttributes: [],
+    dataAttributes: {},
   };
   const metas = await Promise.all(promisedMetadata);
   return metas.reduce(
     (acc, meta) => ({
       classes: [...acc.classes, ...(meta.classes || [])],
-      dataAttributes: [...acc.dataAttributes, ...(meta.dataAttributes || [])],
+      dataAttributes: Object.assign(acc.dataAttributes, meta.dataAttributes),
       dots: [...acc.dots, ...(meta.dots || [])],
     }),
     meta

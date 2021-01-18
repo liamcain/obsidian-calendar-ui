@@ -20,7 +20,7 @@ export interface IDot {
 
 export interface IDayMetadata {
   classes?: string[];
-  dataAttributes?: string[];
+  dataAttributes?: Record<string, string>;
   dots?: IDot[];
 }
 
