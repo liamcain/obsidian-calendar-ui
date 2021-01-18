@@ -37,6 +37,7 @@
       on:contextmenu="{onContextMenu && ((e) => onContextMenu(date, e))}"
       on:pointerover="{onHover &&
         ((e) => onHover(date, e.target, isMetaPressed(e)))}"
+      {...metadata.dataAttributes || {}}
     >
       {date.format("D")}
       <div class="dot-container">
