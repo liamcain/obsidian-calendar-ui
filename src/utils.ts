@@ -41,13 +41,13 @@ export function getMonth(
   // These functions mutate the global window.moment object.
   // Call them here to make sure the calendar view stays in
   // sync with settings.
-  configureMomentLocale(localeOverride);
+  const locale = configureMomentLocale(localeOverride);
   overrideMomentWeekStart(weekStart);
 
   const month = [];
   let week: IWeek;
 
-  const startOfMonth = displayedMonth.clone().date(1);
+  const startOfMonth = displayedMonth.clone().locale(locale).date(1);
   const startOffset = startOfMonth.weekday();
   let date: Moment = startOfMonth.clone().subtract(startOffset, "days");
 
