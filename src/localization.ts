@@ -57,9 +57,9 @@ const weekdays = [
  *
  * @param localeOverride locale string (e.g. "en-US")
  */
-export async function configureMomentLocale(
+export function configureMomentLocale(
   localeOverride: ILocaleOverride = "system-default"
-): Promise<void> {
+): string {
   const obsidianLang = localStorage.getItem("language") || "en";
   const systemLang = navigator.language?.toLowerCase();
 
@@ -76,6 +76,8 @@ export async function configureMomentLocale(
   console.debug(
     `[Calendar] Trying to switch Moment.js global locale to ${momentLocale}, got ${currentLocale}`
   );
+
+  return currentLocale;
 }
 
 export function overrideMomentWeekStart(weekStart: IWeekStartOption): void {
