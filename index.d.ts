@@ -1,4 +1,4 @@
-import type { Moment } from "moment";
+import type { Locale, Moment } from "moment";
 import { SvelteComponentTyped } from "svelte";
 
 export type ILocaleOverride = "system-default" | string;
@@ -32,10 +32,7 @@ export interface ICalendarSource {
 export class Calendar extends SvelteComponentTyped<{
   // Settings
   showWeekNums: boolean;
-
-  // Localization
-  localeOverride: ILocaleOverride;
-  weekStart: IWeekStartOption;
+  localeData?: Locale;
 
   // Event Handlers
   onHoverDay?: (date: Moment, targetEl: EventTarget) => void;
@@ -53,3 +50,8 @@ export class Calendar extends SvelteComponentTyped<{
   today?: Moment;
   displayedMonth?: Moment;
 }> {}
+
+export function configureGlobalMomentLocale(
+  localeOverride: ILocaleOverride,
+  weekStart: IWeekStartOption
+): string;
