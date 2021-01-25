@@ -1,12 +1,6 @@
 import type { Moment } from "moment";
 import * as os from "os";
 
-import {
-  configureMomentLocale,
-  overrideMomentWeekStart,
-  ILocaleOverride,
-  IWeekStartOption,
-} from "./localization";
 import type { IMonth, IWeek } from "./types";
 
 function isMacOS() {
@@ -33,17 +27,8 @@ export function getStartOfWeek(days: Moment[]): Moment {
  * Generate a 2D array of daily information to power
  * the calendar view.
  */
-export function getMonth(
-  displayedMonth: Moment,
-  weekStart: IWeekStartOption,
-  localeOverride?: ILocaleOverride
-): IMonth {
-  // These functions mutate the global window.moment object.
-  // Call them here to make sure the calendar view stays in
-  // sync with settings.
-  const locale = configureMomentLocale(localeOverride);
-  overrideMomentWeekStart(weekStart);
-
+export function getMonth(displayedMonth: Moment, ..._args: unknown[]): IMonth {
+  const locale = window.moment().locale();
   const month = [];
   let week: IWeek;
 

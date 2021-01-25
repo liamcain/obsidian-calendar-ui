@@ -1,7 +1,7 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import type { Moment } from "moment";
+  import type { Locale, Moment } from "moment";
 
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
@@ -9,11 +9,9 @@
   import { getDailyMetadata, getWeeklyMetadata } from "../metadata";
   import type { ICalendarSource, IMonth } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
-  import type { ILocaleOverride, IWeekStartOption } from "../localization";
 
   // Localization
-  export let weekStart: IWeekStartOption = "locale";
-  export let localeOverride: ILocaleOverride;
+  export let localeData: Locale;
 
   // Settings
   export let showWeekNums: boolean = false;
@@ -45,8 +43,8 @@
   let month: IMonth;
   let daysOfWeek: string[];
 
-  $: month = getMonth(displayedMonth, weekStart, localeOverride);
-  $: daysOfWeek = getDaysOfWeek(today, localeOverride);
+  $: month = getMonth(displayedMonth, localeData);
+  $: daysOfWeek = getDaysOfWeek(today, localeData);
 
   // Exports
   export function incrementDisplayedMonth() {
