@@ -28,6 +28,7 @@ const langToMomentLocale = {
   ro: "ro",
   "pt-BR": "pt-br",
   cz: "cs",
+  da: "da",
   de: "de",
   es: "es",
   fr: "fr",
