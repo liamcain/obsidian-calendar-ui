@@ -1,6 +1,6 @@
 {
   "name": "obsidian-calendar-ui",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Calendar UI that powers obsidian-calendar-plugin",
   "author": "liamcain",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
     "test:watch": "yarn test -- --watch"
   },
   "dependencies": {
-    "obsidian-daily-notes-interface": "0.5.1",
+    "obsidian-daily-notes-interface": "0.7.0",
     "svelte": "3.31.0",
     "tslib": "2.0.3"
   },
