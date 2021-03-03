@@ -7,14 +7,22 @@ export interface IDot {
 }
 
 export interface IDayMetadata {
-  classes?: string[];
-  dataAttributes?: Record<string, string>;
-  dots?: IDot[];
+  name: string;
+  value: number;
+  goal?: number;
+
+  // appearance
+  minDots: number;
+  maxDots: number;
+  valueToDotRadio: number;
+  color: string;
+  isShowcased?: boolean;
 }
 
 export interface ICalendarSource {
   getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
   getWeeklyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  getMonthlyMetadata?: (date: Moment) => Promise<IDayMetadata>;
 }
 
 export interface IWeek {

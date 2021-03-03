@@ -1,14 +1,22 @@
 <svelte:options immutable />
 
 <script lang="ts">
+  import { debounce } from "obsidian";
   import type { Locale, Moment } from "moment";
+  import { writable } from "svelte/store";
 
+  import PopoverMenu from "./popover/PopoverMenu.svelte";
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import { getDailyMetadata, getWeeklyMetadata } from "../metadata";
+  import {
+    getDailyMetadata,
+    getWeeklyMetadata,
+    getMonthlyMetadata,
+  } from "../metadata";
   import type { ICalendarSource, IMonth } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
+  import type { IDayMetadata } from "src/types";
 
   // Localization
   export let localeData: Locale;
@@ -27,10 +35,17 @@
     targetEl: EventTarget,
     isMetaPressed: boolean
   ) => boolean;
+  export let onHoverMonth: (
+    date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ) => boolean;
   export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
   export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
+  export let onContextMenuMonth: (date: Moment, event: MouseEvent) => boolean;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onClickMonth: (date: Moment, isMetaPressed: boolean) => boolean;
 
   // External sources (All optional)
   export let sources: ICalendarSource[] = [];
@@ -43,8 +58,10 @@
   let month: IMonth;
   let daysOfWeek: string[];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let isMobile = (window.app as any).isMobile;
+  let hoverTimeout: number;
+  let showPopover: boolean = false;
+  let popoverMetadata: IDayMetadata[];
+  let hoveredDay = writable<HTMLElement>(null);
 
   $: month = getMonth(displayedMonth, localeData);
   $: daysOfWeek = getDaysOfWeek(today, localeData);
@@ -61,15 +78,58 @@
   export function resetDisplayedMonth() {
     displayedMonth = today.clone();
   }
+
+  function openPopover() {
+    showPopover = true;
+  }
+
+  function updatePopover(event: CustomEvent) {
+    const { metadata, target } = event.detail;
+
+    if (!showPopover) {
+      window.clearTimeout(hoverTimeout);
+      hoverTimeout = window.setTimeout(() => {
+        if ($hoveredDay === target) {
+          openPopover();
+        }
+      }, 750);
+    }
+
+    if ($hoveredDay !== target) {
+      hoveredDay.set(target);
+      popoverMetadata = metadata;
+    }
+  }
+
+  const dismissPopover = debounce(
+    (event: CustomEvent) => {
+      // if the user didn't hover onto another day
+      if ($hoveredDay === event.detail.target) {
+        hoveredDay.set(null);
+        showPopover = false;
+      }
+    },
+    250,
+    true
+  );
 </script>
 
-<div id="calendar-container" class="container" class:is-mobile="{isMobile}">
+<div id="calendar-container" class="container">
+  <PopoverMenu
+    referenceElement="{$hoveredDay}"
+    popoverMetadata="{popoverMetadata}"
+    isVisible="{showPopover}"
+  />
   <Nav
     today="{today}"
     displayedMonth="{displayedMonth}"
     incrementDisplayedMonth="{incrementDisplayedMonth}"
     decrementDisplayedMonth="{decrementDisplayedMonth}"
     resetDisplayedMonth="{resetDisplayedMonth}"
+    metadata="{getMonthlyMetadata(sources, displayedMonth, today)}"
+    onClickMonth="{onClickMonth}"
+    onContextMenuMonth="{onContextMenuMonth}"
+    onHoverMonth="{onHoverMonth}"
   />
   <table class="calendar">
     <colgroup>
@@ -113,6 +173,8 @@
               onHover="{onHoverDay}"
               metadata="{getDailyMetadata(sources, day, today)}"
               selectedId="{selectedId}"
+              on:hoverDay="{updatePopover}"
+              on:endHoverDay="{dismissPopover}"
             />
           {/each}
         </tr>
@@ -143,14 +205,6 @@
     padding: 0 8px;
   }
 
-  .container.is-mobile {
-    padding: 0;
-  }
-
-  th {
-    text-align: center;
-  }
-
   .weekend {
     background-color: var(--color-background-weekend);
   }
@@ -166,6 +220,7 @@
     font-size: 0.6em;
     letter-spacing: 1px;
     padding: 4px;
+    text-align: center;
     text-transform: uppercase;
   }
 </style>
