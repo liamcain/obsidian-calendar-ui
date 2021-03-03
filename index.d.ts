@@ -19,14 +19,22 @@ export interface IDot {
 }
 
 export interface IDayMetadata {
-  classes?: string[];
-  dataAttributes?: Record<string, string>;
-  dots?: IDot[];
+  name: string;
+  value: number | string;
+  goal?: number;
+
+  // appearance
+  minDots: number;
+  maxDots: number;
+  valueToDotRadio: number;
+  color: string;
+  isShowcased?: boolean;
 }
 
 export interface ICalendarSource {
   getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
   getWeeklyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  getMonthlyMetadata?: (date: Moment) => Promise<IDayMetadata>;
 }
 
 export class Calendar extends SvelteComponentTyped<{
@@ -37,10 +45,13 @@ export class Calendar extends SvelteComponentTyped<{
   // Event Handlers
   onHoverDay?: (date: Moment, targetEl: EventTarget) => void;
   onHoverWeek?: (date: Moment, targetEl: EventTarget) => void;
+  onHoverMonth?: (date: Moment, targetEl: EventTarget) => void;
   onClickDay?: (date: Moment, isMetaPressed: boolean) => void;
   onClickWeek?: (date: Moment, isMetaPressed: boolean) => void;
+  onClickMonth?: (date: Moment, isMetaPressed: boolean) => void;
   onContextMenuDay?: (date: Moment, event: MouseEvent) => boolean;
   onContextMenuWeek?: (date: Moment, event: MouseEvent) => boolean;
+  onContextMenuMonth?: (date: Moment, event: MouseEvent) => boolean;
 
   // External sources
   selectedId?: string | null;

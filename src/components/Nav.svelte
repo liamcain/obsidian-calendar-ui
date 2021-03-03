@@ -2,9 +2,20 @@
   import type { Moment } from "moment";
 
   import Arrow from "./Arrow.svelte";
+  import Month from "./Month.svelte";
+  import type { IDayMetadata } from "../types";
 
   export let displayedMonth: Moment;
   export let today: Moment;
+  export let metadata: Promise<IDayMetadata[]> | null;
+
+  export let onHoverMonth: (
+    date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ) => boolean;
+  export let onClickMonth: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onContextMenuMonth: (date: Moment, event: MouseEvent) => boolean;
 
   export let resetDisplayedMonth: () => void;
   export let incrementDisplayedMonth: () => void;
@@ -16,9 +27,16 @@
 
 <div class="nav">
   <h3 class="title" on:click="{resetDisplayedMonth}">
-    <span class="month">{displayedMonth.format('MMM')}</span>
-    <span class="year">{displayedMonth.format('YYYY')}</span>
+    <span class="month">{displayedMonth.format("MMM")}</span>
+    <span class="year">{displayedMonth.format("YYYY")}</span>
   </h3>
+  <Month
+    displayedMonth="{displayedMonth}"
+    onClick="{onClickMonth}"
+    onHover="{onHoverMonth}"
+    onContextMenu="{onContextMenuMonth}"
+    metadata="{metadata}"
+  />
   <div class="right-nav">
     <Arrow
       direction="left"

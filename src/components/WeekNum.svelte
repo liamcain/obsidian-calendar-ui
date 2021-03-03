@@ -4,15 +4,16 @@
   import type { Moment } from "moment";
   import { getDateUID } from "obsidian-daily-notes-interface";
 
-  import Dot from "./Dot.svelte";
+  import Dots from "./Dots.svelte";
   import MetadataResolver from "./MetadataResolver.svelte";
   import type { IDayMetadata } from "../types";
   import { getStartOfWeek, isMetaPressed } from "../utils";
+  import { createEventDispatcher } from "svelte";
 
   // Properties
   export let weekNum: number;
   export let days: Moment[];
-  export let metadata: Promise<IDayMetadata> | null;
+  export let metadata: Promise<IDayMetadata[]> | null;
 
   // Event handlers
   export let onHover: (
@@ -28,24 +29,30 @@
 
   let startOfWeek: Moment;
   $: startOfWeek = getStartOfWeek(days);
+
+  const dispatch = createEventDispatcher();
+
+  function handleHover(event: PointerEvent) {
+    onHover?.(days[0], event.target, isMetaPressed(event));
+    dispatch("hoverDay", {
+      date: days[0],
+      metadata,
+      target: event.target,
+    });
+  }
 </script>
 
 <td>
   <MetadataResolver metadata="{metadata}" let:metadata>
     <div
-      class="{`week-num ${metadata.classes.join(' ')}`}"
+      class="week-num"
       class:active="{selectedId === getDateUID(days[0], 'week')}"
       on:click="{onClick && ((e) => onClick(startOfWeek, isMetaPressed(e)))}"
       on:contextmenu="{onContextMenu && ((e) => onContextMenu(days[0], e))}"
-      on:pointerover="{onHover &&
-        ((e) => onHover(startOfWeek, e.target, isMetaPressed(e)))}"
+      on:pointerover="{handleHover}"
     >
       {weekNum}
-      <div class="dot-container">
-        {#each metadata.dots as dot}
-          <Dot {...dot} />
-        {/each}
-      </div>
+      <Dots metadata="{metadata}" />
     </div>
   </MetadataResolver>
 </td>
@@ -79,13 +86,5 @@
   .active {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
-  }
-
-  .dot-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    line-height: 6px;
-    min-height: 6px;
   }
 </style>

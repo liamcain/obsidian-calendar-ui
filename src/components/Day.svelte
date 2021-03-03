@@ -3,15 +3,16 @@
 <script lang="ts">
   import type { Moment } from "moment";
   import { getDateUID } from "obsidian-daily-notes-interface";
+  import { createEventDispatcher } from "svelte";
 
-  import Dot from "./Dot.svelte";
+  import Dots from "./Dots.svelte";
   import MetadataResolver from "./MetadataResolver.svelte";
   import type { IDayMetadata } from "../types";
   import { isMetaPressed } from "../utils";
 
   // Properties
   export let date: Moment;
-  export let metadata: Promise<IDayMetadata> | null;
+  export let metadata: Promise<IDayMetadata[]> | null;
   export let onHover: (
     date: Moment,
     targetEl: EventTarget,
@@ -24,27 +25,39 @@
   export let today: Moment;
   export let displayedMonth: Moment = null;
   export let selectedId: string = null;
+
+  const dispatch = createEventDispatcher();
+
+  function handleHover(event: PointerEvent, meta: IDayMetadata) {
+    onHover?.(date, event.target, isMetaPressed(event));
+    dispatch("hoverDay", {
+      date,
+      metadata: meta,
+      target: event.target,
+    });
+  }
+
+  function endHover(event: PointerEvent) {
+    dispatch("endHoverDay", {
+      target: event.target,
+    });
+  }
 </script>
 
 <td>
   <MetadataResolver metadata="{metadata}" let:metadata>
     <div
-      class="{`day ${metadata.classes.join(' ')}`}"
+      class="day"
       class:active="{selectedId === getDateUID(date, 'day')}"
       class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
       class:today="{date.isSame(today, 'day')}"
       on:click="{onClick && ((e) => onClick(date, isMetaPressed(e)))}"
       on:contextmenu="{onContextMenu && ((e) => onContextMenu(date, e))}"
-      on:pointerover="{onHover &&
-        ((e) => onHover(date, e.target, isMetaPressed(e)))}"
-      {...metadata.dataAttributes || {}}
+      on:pointerenter="{(event) => handleHover(event, metadata)}"
+      on:pointerleave="{endHover}"
     >
       {date.format("D")}
-      <div class="dot-container">
-        {#each metadata.dots as dot}
-          <Dot {...dot} />
-        {/each}
-      </div>
+      <Dots metadata="{metadata}" />
     </div>
   </MetadataResolver>
 </td>
@@ -84,13 +97,5 @@
   .active.today {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
-  }
-
-  .dot-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    line-height: 6px;
-    min-height: 6px;
   }
 </style>

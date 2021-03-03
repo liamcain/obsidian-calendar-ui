@@ -3,7 +3,7 @@
 <script lang="ts">
   import type { IDayMetadata } from "../types";
 
-  export let metadata: Promise<IDayMetadata> | null;
+  export let metadata: Promise<IDayMetadata[]> | null;
 </script>
 
 {#if metadata}
