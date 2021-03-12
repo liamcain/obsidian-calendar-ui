@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { getDots } from "src/metadata";
   import type { IDayMetadata } from "src/types";
 
   import Dot from "./Dot.svelte";
@@ -8,10 +7,12 @@
 </script>
 
 <div class="dot-container">
-  {#each metadata as entry}
-    {#each getDots(entry) as dot}
-      <Dot {...dot} />
-    {/each}
+  {#each metadata as { toDots, value, goal }}
+    {#if toDots}
+      {#each toDots(value, goal) as dot}
+        <Dot {...dot} />
+      {/each}
+    {/if}
   {/each}
 </div>
 
