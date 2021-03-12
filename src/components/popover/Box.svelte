@@ -60,7 +60,7 @@
   .container {
     background-color: var(--background-primary);
     border-radius: 4px;
-    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.25);
     color: white;
     display: flex;
     flex-direction: column;
@@ -131,7 +131,7 @@
   .showcase-dot,
   .dot {
     flex-shrink: 0;
-    margin-right: 4px;
+    margin-right: 6px;
     height: 8px;
     width: 8px;
   }

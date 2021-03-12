@@ -1,7 +1,5 @@
 import type { Moment } from "moment";
 
-import type { IDot } from "src/types";
-
 import type { ICalendarSource, IDayMetadata } from "./types";
 
 export function clamp(
@@ -12,16 +10,16 @@ export function clamp(
   return Math.min(Math.max(lowerBound, num), upperBound);
 }
 
-export function getDots(metadata: IDayMetadata): IDot[] {
-  const { value, minDots, maxDots, valueToDotRadio = 1 } = metadata;
-  const numDots = clamp(Math.round(value * valueToDotRadio), minDots, maxDots);
+// export function getDots(metadata: IDayMetadata): IDot[] {
+//   const { color, value, goal, toDots } = metadata;
+//   const numDots = clamp(Math.round(value * valueToDotRadio), minDots, maxDots);
 
-  return [...Array(numDots).keys()].map(() => ({
-    className: "",
-    color: metadata.color,
-    isFilled: true,
-  }));
-}
+//   return [...Array(numDots).keys()].map(() => ({
+//     className: "",
+//     color,
+//     isFilled: true,
+//   }));
+// }
 
 async function metadataReducer(
   promisedMetadata: Promise<IDayMetadata>[]

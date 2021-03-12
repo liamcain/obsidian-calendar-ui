@@ -33,7 +33,7 @@
 >
   <div
     class="popper"
-    class:hidden="{!referenceElement || !isVisible}"
+    class:visible="{!!referenceElement && isVisible}"
     bind:this="{popperElement}"
     style="{css(styles.popper)}"
     {...attributes.popper}
@@ -45,13 +45,14 @@
 <style>
   .popper {
     transition: opacity 0.1s ease-in;
-    opacity: 1;
+    opacity: 0;
     pointer-events: none;
+    position: absolute;
     z-index: var(--layer-popover);
   }
 
   /* Hide the popper when the reference is hidden */
-  .popper.hidden {
-    opacity: 0;
+  .popper.visible {
+    opacity: 1;
   }
 </style>

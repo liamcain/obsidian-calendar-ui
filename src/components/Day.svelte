@@ -27,6 +27,9 @@
   export let selectedId: string = null;
 
   const dispatch = createEventDispatcher();
+  let dayEl: HTMLElement;
+
+  // window.app.dragManager.handleDrag(foo, (e) => window.app.dragManager.dragFile(e, ))
 
   function handleHover(event: PointerEvent, meta: IDayMetadata) {
     onHover?.(date, event.target, isMetaPressed(event));
@@ -47,6 +50,7 @@
 <td>
   <MetadataResolver metadata="{metadata}" let:metadata>
     <div
+      bind:this="{dayEl}"
       class="day"
       class:active="{selectedId === getDateUID(date, 'day')}"
       class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
