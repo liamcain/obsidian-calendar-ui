@@ -13,19 +13,13 @@ export type IWeekStartOption =
   | "locale";
 
 export interface IDot {
-  color: string;
   isFilled: boolean;
 }
 
-export interface IDayMetadata {
-  name: string;
-  value: number | string;
+export interface IEvaluatedMetadata {
+  value: number;
   goal?: number;
-
-  // appearance
-  color: string;
-  toDots?: (value: number, goal?: number) => IDot[];
-  isShowcased?: boolean;
+  dots: IDot[];
 }
 
 export type ISourceDisplayOption = "calendar-and-menu" | "menu" | "none";
@@ -36,14 +30,22 @@ export interface ISourceSettings {
   order: number;
 }
 
+export interface IDayMetadata
+  extends ICalendarSource,
+    ISourceSettings,
+    IEvaluatedMetadata {}
+
 export interface ICalendarSource {
   id: string;
   name: string;
   description?: string;
 
-  getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
-  getWeeklyMetadata?: (date: Moment) => Promise<IDayMetadata>;
-  getMonthlyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  getDailyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
+  getWeeklyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
+  getMonthlyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  defaultSettings: any;
   registerSettings?: (
     containerEl: HTMLElement,
     settings: ISourceSettings,
@@ -51,15 +53,22 @@ export interface ICalendarSource {
   ) => void;
 }
 
-export interface IRealizedSource {
-  id: string;
-  name: string;
-  description?: string;
+export interface IEvaluatedMetadata {
+  value: number;
+  goal?: number;
+  dots: IDot[];
+}
 
+export interface ISourceSettings {
   color: string;
   display: ISourceDisplayOption;
   order: number;
 }
+
+export interface IDayMetadata
+  extends ICalendarSource,
+    ISourceSettings,
+    IEvaluatedMetadata {}
 
 export class Calendar extends SvelteComponentTyped<{
   // Settings
@@ -80,6 +89,7 @@ export class Calendar extends SvelteComponentTyped<{
   // External sources
   selectedId?: string | null;
   sources?: ICalendarSource[];
+  getSourceSettings: (sourceId: string) => ISourceSettings;
 
   // Override-able local state
   today?: Moment;

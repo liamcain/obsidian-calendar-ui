@@ -9,10 +9,15 @@
   export let referenceElement: HTMLElement;
   export let popoverMetadata: IDayMetadata[];
   export let isVisible: boolean;
+
+  let menuItems: IDayMetadata[];
+  $: menuItems = (popoverMetadata || [])
+    .filter((meta) => ["menu", "calendar-and-menu"].includes(meta.display))
+    .sort((a, b) => a.order - b.order);
 </script>
 
 <Portal target=".app-container">
   <Popper referenceElement="{referenceElement}" isVisible="{isVisible}">
-    <Box menuItems="{popoverMetadata}" />
+    <Box menuItems="{menuItems}" />
   </Popper>
 </Portal>
