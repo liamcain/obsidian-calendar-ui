@@ -14,7 +14,7 @@
     getWeeklyMetadata,
     getMonthlyMetadata,
   } from "../metadata";
-  import type { ICalendarSource, IMonth } from "../types";
+  import type { ICalendarSource, IMonth, ISourceSettings } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
   import type { IDayMetadata } from "src/types";
 
@@ -49,6 +49,7 @@
 
   // External sources (All optional)
   export let sources: ICalendarSource[] = [];
+  export let getSourceSettings: (sourceId: string) => ISourceSettings;
   export let selectedId: string;
 
   // Override-able local state
@@ -126,7 +127,12 @@
     incrementDisplayedMonth="{incrementDisplayedMonth}"
     decrementDisplayedMonth="{decrementDisplayedMonth}"
     resetDisplayedMonth="{resetDisplayedMonth}"
-    metadata="{getMonthlyMetadata(sources, displayedMonth, today)}"
+    metadata="{getMonthlyMetadata(
+      sources,
+      getSourceSettings,
+      displayedMonth,
+      today
+    )}"
     onClickMonth="{onClickMonth}"
     onContextMenuMonth="{onContextMenuMonth}"
     onHoverMonth="{onHoverMonth}"
@@ -156,7 +162,12 @@
           {#if showWeekNums}
             <WeekNum
               {...week}
-              metadata="{getWeeklyMetadata(sources, week.days[0], today)}"
+              metadata="{getWeeklyMetadata(
+                sources,
+                getSourceSettings,
+                week.days[0],
+                today
+              )}"
               onClick="{onClickWeek}"
               onContextMenu="{onContextMenuWeek}"
               onHover="{onHoverWeek}"
@@ -171,7 +182,12 @@
               onClick="{onClickDay}"
               onContextMenu="{onContextMenuDay}"
               onHover="{onHoverDay}"
-              metadata="{getDailyMetadata(sources, day, today)}"
+              metadata="{getDailyMetadata(
+                sources,
+                getSourceSettings,
+                day,
+                today
+              )}"
               selectedId="{selectedId}"
               on:hoverDay="{updatePopover}"
               on:endHoverDay="{dismissPopover}"

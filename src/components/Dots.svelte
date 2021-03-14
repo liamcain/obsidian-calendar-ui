@@ -7,10 +7,10 @@
 </script>
 
 <div class="dot-container">
-  {#each metadata as { toDots, value, goal }}
-    {#if toDots}
-      {#each toDots(value, goal) as dot}
-        <Dot {...dot} />
+  {#each metadata as { color, display, dots = [] }}
+    {#if display === "calendar-and-menu"}
+      {#each dots as dot}
+        <Dot {...dot} color="{color}" />
       {/each}
     {/if}
   {/each}

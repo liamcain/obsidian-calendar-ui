@@ -7,8 +7,8 @@
   let overflowItems: IDayMetadata[];
 
   $: {
-    showcaseItems = (menuItems || []).filter((item) => item.isShowcased);
-    overflowItems = (menuItems || []).filter((item) => !item.isShowcased);
+    showcaseItems = (menuItems || []).slice(0, 2);
+    overflowItems = (menuItems || []).slice(2);
   }
 </script>
 
@@ -76,6 +76,7 @@
 
   .showcase {
     display: grid;
+    gap: 12px;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     margin-bottom: 12px;
   }
