@@ -1,10 +1,9 @@
 import type { Moment } from "moment";
-import * as os from "os";
 
 import type { IMonth, IWeek } from "./types";
 
 function isMacOS() {
-  return os.platform() === "darwin";
+  return navigator.appVersion.indexOf("Mac") !== -1;
 }
 
 export function isMetaPressed(e: MouseEvent): boolean {
