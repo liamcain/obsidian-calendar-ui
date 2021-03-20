@@ -12,7 +12,6 @@ export default {
     { file: pkg.module, format: "es", name: "obsidian-calendar-ui" },
     { file: pkg.main, format: "umd", name: "obsidian-calendar-ui" },
   ],
-  external: ["fs", "os", "path"],
   plugins: [
     svelte({
       emitCss: false,
@@ -25,6 +24,6 @@ export default {
     }),
     commonjs({
       include: /node_modules/,
-    })
+    }),
   ],
 };
