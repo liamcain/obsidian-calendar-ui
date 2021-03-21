@@ -3,10 +3,11 @@
 <script lang="ts">
   import type { Moment } from "moment";
   import { getDateUID } from "obsidian-daily-notes-interface";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
 
   import Dots from "./Dots.svelte";
   import MetadataResolver from "./MetadataResolver.svelte";
+  import { key as mobileContext } from "./mobileContext";
   import type { IDayMetadata } from "../types";
   import { isMetaPressed } from "../utils";
 
@@ -26,10 +27,23 @@
   export let displayedMonth: Moment = null;
   export let selectedId: string = null;
 
+  let isMobile = getContext(mobileContext);
+
   const dispatch = createEventDispatcher();
   let dayEl: HTMLElement;
 
   // window.app.dragManager.handleDrag(foo, (e) => window.app.dragManager.dragFile(e, ))
+
+  function handleClick(event: MouseEvent, meta: IDayMetadata) {
+    onClick?.(date, isMetaPressed(event));
+    if (isMobile) {
+      dispatch("hoverDay", {
+        date,
+        metadata: meta,
+        target: event.target,
+      });
+    }
+  }
 
   function handleHover(event: PointerEvent, meta: IDayMetadata) {
     onHover?.(date, event.target, isMetaPressed(event));
@@ -55,7 +69,7 @@
       class:active="{selectedId === getDateUID(date, 'day')}"
       class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
       class:today="{date.isSame(today, 'day')}"
-      on:click="{onClick && ((e) => onClick(date, isMetaPressed(e)))}"
+      on:click="{(event) => handleClick(event, metadata)}"
       on:contextmenu="{onContextMenu && ((e) => onContextMenu(date, e))}"
       on:pointerenter="{(event) => handleHover(event, metadata)}"
       on:pointerleave="{endHover}"

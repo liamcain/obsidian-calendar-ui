@@ -1,14 +1,18 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import Portal from "svelte-portal/src/Portal.svelte";
 
   import type { IDayMetadata } from "src/types";
 
   import Box from "./Box.svelte";
+  import { key } from "../mobileContext";
   import Popper from "./Popper.svelte";
 
   export let referenceElement: HTMLElement;
   export let popoverMetadata: IDayMetadata[];
   export let isVisible: boolean;
+
+  let isMobile = getContext(key);
 
   let menuItems: IDayMetadata[];
   $: menuItems = (popoverMetadata || [])
@@ -16,8 +20,12 @@
     .sort((a, b) => a.order - b.order);
 </script>
 
-<Portal target=".app-container">
-  <Popper referenceElement="{referenceElement}" isVisible="{isVisible}">
-    <Box menuItems="{menuItems}" />
-  </Popper>
-</Portal>
+{#if isMobile}
+  <Box menuItems="{menuItems}" />
+{:else}
+  <Portal target=".app-container">
+    <Popper referenceElement="{referenceElement}" isVisible="{isVisible}">
+      <Box menuItems="{menuItems}" />
+    </Popper>
+  </Portal>
+{/if}
