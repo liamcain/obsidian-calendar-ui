@@ -3,8 +3,12 @@
 <script lang="ts">
   import { debounce } from "obsidian";
   import type { Locale, Moment } from "moment";
+  import { setContext } from "svelte";
   import { writable } from "svelte/store";
 
+  import type { IDayMetadata } from "src/types";
+
+  import { isMobile, key } from "./mobileContext";
   import PopoverMenu from "./popover/PopoverMenu.svelte";
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
@@ -16,7 +20,6 @@
   } from "../metadata";
   import type { ICalendarSource, IMonth, ISourceSettings } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
-  import type { IDayMetadata } from "src/types";
 
   // Localization
   export let localeData: Locale;
@@ -55,6 +58,8 @@
   // Override-able local state
   export let today: Moment = window.moment();
   export let displayedMonth = today;
+
+  setContext(key, isMobile);
 
   let month: IMonth;
   let daysOfWeek: string[];
@@ -116,11 +121,6 @@
 </script>
 
 <div id="calendar-container" class="container">
-  <PopoverMenu
-    referenceElement="{$hoveredDay}"
-    popoverMetadata="{popoverMetadata}"
-    isVisible="{showPopover}"
-  />
   <Nav
     today="{today}"
     displayedMonth="{displayedMonth}"
@@ -197,6 +197,11 @@
       {/each}
     </tbody>
   </table>
+  <PopoverMenu
+    referenceElement="{$hoveredDay}"
+    popoverMetadata="{popoverMetadata}"
+    isVisible="{showPopover}"
+  />
 </div>
 
 <style>
