@@ -12,12 +12,15 @@
 
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let isMobile = (window.app as any).isMobile;
 </script>
 
-<div class="nav">
+<div class="nav" class:is-mobile="{isMobile}">
   <h3 class="title" on:click="{resetDisplayedMonth}">
-    <span class="month">{displayedMonth.format('MMM')}</span>
-    <span class="year">{displayedMonth.format('YYYY')}</span>
+    <span class="month">{displayedMonth.format("MMM")}</span>
+    <span class="year">{displayedMonth.format("YYYY")}</span>
   </h3>
   <div class="right-nav">
     <Arrow
@@ -45,10 +48,18 @@
     width: 100%;
   }
 
+  .nav.is-mobile {
+    padding: 0;
+  }
+
   .title {
     color: var(--color-text-title);
     font-size: 1.5em;
     margin: 0;
+  }
+
+  .is-mobile .title {
+    font-size: 1.3em;
   }
 
   .month {
@@ -67,6 +78,7 @@
   }
 
   .reset-button {
+    cursor: pointer;
     border-radius: 4px;
     color: var(--text-muted);
     font-size: 0.7em;
@@ -75,5 +87,9 @@
     margin: 0 4px;
     padding: 0px 4px;
     text-transform: uppercase;
+  }
+
+  .is-mobile .reset-button {
+    display: none;
   }
 </style>

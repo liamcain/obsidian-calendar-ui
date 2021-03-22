@@ -43,6 +43,9 @@
   let month: IMonth;
   let daysOfWeek: string[];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let isMobile = (window.app as any).isMobile;
+
   $: month = getMonth(displayedMonth, localeData);
   $: daysOfWeek = getDaysOfWeek(today, localeData);
 
@@ -60,7 +63,7 @@
   }
 </script>
 
-<div id="calendar-container" class="container">
+<div id="calendar-container" class="container" class:is-mobile="{isMobile}">
   <Nav
     today="{today}"
     displayedMonth="{displayedMonth}"
@@ -138,6 +141,10 @@
 
   .container {
     padding: 0 8px;
+  }
+
+  .container.is-mobile {
+    padding: 0;
   }
 
   th {
