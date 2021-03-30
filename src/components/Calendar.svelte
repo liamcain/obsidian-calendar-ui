@@ -122,11 +122,9 @@
 
 <div id="calendar-container" class="container">
   <Nav
-    today="{today}"
     displayedMonth="{displayedMonth}"
     incrementDisplayedMonth="{incrementDisplayedMonth}"
     decrementDisplayedMonth="{decrementDisplayedMonth}"
-    resetDisplayedMonth="{resetDisplayedMonth}"
     metadata="{getMonthlyMetadata(
       sources,
       getSourceSettings,
@@ -136,6 +134,10 @@
     onClickMonth="{onClickMonth}"
     onContextMenuMonth="{onContextMenuMonth}"
     onHoverMonth="{onHoverMonth}"
+    resetDisplayedMonth="{resetDisplayedMonth}"
+    today="{today}"
+    on:hoverDay="{updatePopover}"
+    on:endHoverDay="{dismissPopover}"
   />
   <table class="calendar">
     <colgroup>
@@ -172,6 +174,8 @@
               onContextMenu="{onContextMenuWeek}"
               onHover="{onHoverWeek}"
               selectedId="{selectedId}"
+              on:hoverDay="{updatePopover}"
+              on:endHoverDay="{dismissPopover}"
             />
           {/if}
           {#each week.days as day (day.format())}
@@ -199,7 +203,7 @@
   </table>
   <PopoverMenu
     referenceElement="{$hoveredDay}"
-    popoverMetadata="{popoverMetadata}"
+    metadata="{popoverMetadata}"
     isVisible="{showPopover}"
   />
 </div>

@@ -9,13 +9,13 @@
   import Popper from "./Popper.svelte";
 
   export let referenceElement: HTMLElement;
-  export let popoverMetadata: IDayMetadata[];
+  export let metadata: IDayMetadata[];
   export let isVisible: boolean;
 
   let isMobile = getContext(key);
 
   let menuItems: IDayMetadata[];
-  $: menuItems = (popoverMetadata || [])
+  $: menuItems = (metadata || [])
     .filter((meta) => ["menu", "calendar-and-menu"].includes(meta.display))
     .sort((a, b) => a.order - b.order);
 </script>

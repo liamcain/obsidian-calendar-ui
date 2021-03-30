@@ -18,6 +18,11 @@ export async function getDailyMetadata(
 ): Promise<IDayMetadata[]> {
   const metadata = [];
   for (const source of sources) {
+    if (!source.getDailyMetadata) {
+      // ignore sources that dont apply to daily notes
+      continue;
+    }
+
     const evaluatedMetadata = (await source.getDailyMetadata?.(date)) || {};
     const sourceSettings = getSourceSettings(source.id);
 
@@ -38,6 +43,11 @@ export async function getWeeklyMetadata(
 ): Promise<IDayMetadata[]> {
   const metadata = [];
   for (const source of sources) {
+    if (!source.getWeeklyMetadata) {
+      // ignore sources that don't apply to weekly notes
+      continue;
+    }
+
     const evaluatedMetadata = (await source.getWeeklyMetadata?.(date)) || {};
     const sourceSettings = getSourceSettings(source.id);
 
@@ -58,6 +68,10 @@ export async function getMonthlyMetadata(
 ): Promise<IDayMetadata[]> {
   const metadata = [];
   for (const source of sources) {
+    if (!source.getMonthlyMetadata) {
+      // ignore sources that don't apply to monthly notes
+      continue;
+    }
     const evaluatedMetadata = (await source.getWeeklyMetadata?.(date)) || {};
     const sourceSettings = getSourceSettings(source.id);
 

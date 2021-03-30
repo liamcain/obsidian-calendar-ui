@@ -32,11 +32,17 @@
 
   const dispatch = createEventDispatcher();
 
-  function handleHover(event: PointerEvent) {
+  function handleHover(event: PointerEvent, meta: IDayMetadata) {
     onHover?.(days[0], event.target, isMetaPressed(event));
     dispatch("hoverDay", {
       date: days[0],
-      metadata,
+      metadata: meta,
+      target: event.target,
+    });
+  }
+
+  function endHover(event: PointerEvent) {
+    dispatch("endHoverDay", {
       target: event.target,
     });
   }
@@ -49,7 +55,8 @@
       class:active="{selectedId === getDateUID(days[0], 'week')}"
       on:click="{onClick && ((e) => onClick(startOfWeek, isMetaPressed(e)))}"
       on:contextmenu="{onContextMenu && ((e) => onContextMenu(days[0], e))}"
-      on:pointerover="{handleHover}"
+      on:pointerenter="{(event) => handleHover(event, metadata)}"
+      on:pointerleave="{endHover}"
     >
       {weekNum}
       <Dots metadata="{metadata}" />
