@@ -10,13 +10,14 @@
   "scripts": {
     "lint": "svelte-check && eslint . --ext .ts",
     "build": "npm run lint && rollup -c",
+    "build:nolint": "rollup -c",
     "test": "jest",
     "test:watch": "yarn test -- --watch"
   },
   "dependencies": {
     "@popperjs/core": "2.8.6",
     "@popperjs/svelte": "0.1.1",
-    "obsidian-daily-notes-interface": "0.7.3",
+    "obsidian-daily-notes-interface": "0.8.0",
     "svelte": "3.35.0",
     "svelte-portal": "2.1.1",
     "tslib": "2.1.0"

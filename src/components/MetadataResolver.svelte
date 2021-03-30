@@ -7,7 +7,9 @@
 </script>
 
 {#if metadata}
-  {#await metadata then resolvedMeta}
+  {#await metadata}
+    <slot metadata="{null}" />
+  {:then resolvedMeta}
     <slot metadata="{resolvedMeta}" />
   {/await}
 {:else}

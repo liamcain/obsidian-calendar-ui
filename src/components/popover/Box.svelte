@@ -2,14 +2,14 @@
   import { getContext } from "svelte";
   import type { IDayMetadata } from "src/types";
 
-  import { key as mobileContext } from "../mobileContext";
+  import { IS_MOBILE } from "../../context";
 
   export let menuItems: IDayMetadata[];
 
   let showcaseItems: IDayMetadata[];
   let overflowItems: IDayMetadata[];
 
-  let isMobile = getContext(mobileContext);
+  const isMobile = getContext(IS_MOBILE);
 
   $: {
     showcaseItems = (menuItems || []).slice(0, 2);
