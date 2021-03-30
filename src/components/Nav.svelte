@@ -28,7 +28,6 @@
 
 <div class="nav">
   <Month
-    displayedMonth="{displayedMonth}"
     onClick="{onClickMonth}"
     onHover="{onHoverMonth}"
     onContextMenu="{onContextMenuMonth}"

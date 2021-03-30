@@ -7,13 +7,15 @@
 
   import Dots from "./Dots.svelte";
   import MetadataResolver from "./MetadataResolver.svelte";
-  import { key as mobileContext } from "./mobileContext";
+  import { IS_MOBILE } from "../context";
   import type { IDayMetadata } from "../types";
   import { isMetaPressed } from "../utils";
 
   // Properties
   export let date: Moment;
+  // let file: TFile | null;
   export let metadata: Promise<IDayMetadata[]> | null;
+
   export let onHover: (
     date: Moment,
     targetEl: EventTarget,
@@ -27,7 +29,7 @@
   export let displayedMonth: Moment = null;
   export let selectedId: string = null;
 
-  let isMobile = getContext(mobileContext);
+  let isMobile = getContext(IS_MOBILE);
 
   const dispatch = createEventDispatcher();
   let dayEl: HTMLElement;

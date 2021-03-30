@@ -5,14 +5,14 @@
   import type { IDayMetadata } from "src/types";
 
   import Box from "./Box.svelte";
-  import { key } from "../mobileContext";
+  import { IS_MOBILE } from "../../context";
   import Popper from "./Popper.svelte";
 
   export let referenceElement: HTMLElement;
   export let metadata: IDayMetadata[];
   export let isVisible: boolean;
 
-  let isMobile = getContext(key);
+  const isMobile = getContext(IS_MOBILE);
 
   let menuItems: IDayMetadata[];
   $: menuItems = (metadata || [])

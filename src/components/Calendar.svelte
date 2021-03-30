@@ -8,16 +8,12 @@
 
   import type { IDayMetadata } from "src/types";
 
-  import { isMobile, key } from "./mobileContext";
+  import { IS_MOBILE, DISPLAYED_MONTH } from "../context";
   import PopoverMenu from "./popover/PopoverMenu.svelte";
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import {
-    getDailyMetadata,
-    getWeeklyMetadata,
-    getMonthlyMetadata,
-  } from "../metadata";
+  import { getEvaluatedMetadata } from "../metadata";
   import type { ICalendarSource, IMonth, ISourceSettings } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
 
@@ -57,9 +53,10 @@
 
   // Override-able local state
   export let today: Moment = window.moment();
-  export let displayedMonth = today;
+  export let displayedMonth: Moment;
 
-  setContext(key, isMobile);
+  setContext(IS_MOBILE, (window.app as any).isMobile);
+  setContext(DISPLAYED_MONTH, displayedMonth || today);
 
   let month: IMonth;
   let daysOfWeek: string[];
@@ -122,10 +119,11 @@
 
 <div id="calendar-container" class="container">
   <Nav
-    displayedMonth="{displayedMonth}"
     incrementDisplayedMonth="{incrementDisplayedMonth}"
     decrementDisplayedMonth="{decrementDisplayedMonth}"
-    metadata="{getMonthlyMetadata(
+    resetDisplayedMonth="{resetDisplayedMonth}"
+    metadata="{getEvaluatedMetadata(
+      'month',
       sources,
       getSourceSettings,
       displayedMonth,
@@ -134,7 +132,6 @@
     onClickMonth="{onClickMonth}"
     onContextMenuMonth="{onContextMenuMonth}"
     onHoverMonth="{onHoverMonth}"
-    resetDisplayedMonth="{resetDisplayedMonth}"
     today="{today}"
     on:hoverDay="{updatePopover}"
     on:endHoverDay="{dismissPopover}"
@@ -164,7 +161,8 @@
           {#if showWeekNums}
             <WeekNum
               {...week}
-              metadata="{getWeeklyMetadata(
+              metadata="{getEvaluatedMetadata(
+                'week',
                 sources,
                 getSourceSettings,
                 week.days[0],
@@ -182,17 +180,17 @@
             <Day
               date="{day}"
               today="{today}"
-              displayedMonth="{displayedMonth}"
-              onClick="{onClickDay}"
-              onContextMenu="{onContextMenuDay}"
-              onHover="{onHoverDay}"
-              metadata="{getDailyMetadata(
+              metadata="{getEvaluatedMetadata(
+                'day',
                 sources,
                 getSourceSettings,
                 day,
                 today
               )}"
               selectedId="{selectedId}"
+              onClick="{onClickDay}"
+              onContextMenu="{onContextMenuDay}"
+              onHover="{onHoverDay}"
               on:hoverDay="{updatePopover}"
               on:endHoverDay="{dismissPopover}"
             />
