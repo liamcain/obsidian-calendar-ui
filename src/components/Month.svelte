@@ -39,15 +39,14 @@
 
   const dispatch = createEventDispatcher();
 
-  $: metadata = fileCache.getEvaluatedMetadata(
-    "month",
-    $displayedMonth,
-    getSourceSettings
-  );
-
   let file: TFile | null;
   fileCache.store.subscribe(() => {
     file = fileCache.getFile($displayedMonth, "month");
+    metadata = fileCache.getEvaluatedMetadata(
+      "month",
+      $displayedMonth,
+      getSourceSettings
+    );
   });
 
   function handleHover(event: PointerEvent, meta: IDayMetadata) {
@@ -69,10 +68,12 @@
 
 <MetadataResolver metadata="{metadata}" let:metadata>
   <div
+    draggable="{true}"
     on:click="{onClick &&
       ((e) => onClick('month', $displayedMonth, file, isMetaPressed(e)))}"
     on:contextmenu="{onContextMenu &&
       ((e) => onContextMenu('month', $displayedMonth, file, e))}"
+    on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
     on:pointerenter="{(event) => handleHover(event, metadata)}"
     on:pointerleave="{endHover}"
   >

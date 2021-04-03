@@ -4,7 +4,7 @@
   import type { Moment } from "moment";
   import type { TFile } from "obsidian";
   import { getDateUID, IGranularity } from "obsidian-daily-notes-interface";
-  import { createEventDispatcher, getContext, onMount } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
   import type { Writable } from "svelte/store";
 
   import Dots from "./Dots.svelte";
