@@ -1,62 +1,40 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import { debounce } from "obsidian";
+  import { App, debounce } from "obsidian";
   import type { Locale, Moment } from "moment";
   import { setContext } from "svelte";
   import { writable } from "svelte/store";
 
   import type { IDayMetadata } from "src/types";
 
-  import { IS_MOBILE, DISPLAYED_MONTH } from "../context";
+  import { DISPLAYED_MONTH, IS_MOBILE } from "../context";
   import PopoverMenu from "./popover/PopoverMenu.svelte";
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import { getEvaluatedMetadata } from "../metadata";
   import type { ICalendarSource, IMonth, ISourceSettings } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
+  import PeriodicNotesCache from "../fileStore";
 
-  // Localization
   export let localeData: Locale;
-
-  // Settings
   export let showWeekNums: boolean = false;
-
-  // Event Handlers
-  export let onHoverDay: (
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onHoverWeek: (
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onHoverMonth: (
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
-  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
-  export let onContextMenuMonth: (date: Moment, event: MouseEvent) => boolean;
-  export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onClickMonth: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let eventHandlers: CallableFunction[];
 
   // External sources (All optional)
+  export let app: App;
   export let sources: ICalendarSource[] = [];
   export let getSourceSettings: (sourceId: string) => ISourceSettings;
   export let selectedId: string;
 
   // Override-able local state
   export let today: Moment = window.moment();
-  export let displayedMonth: Moment;
+  export let displayedMonth: Moment = today;
 
   setContext(IS_MOBILE, (window.app as any).isMobile);
-  setContext(DISPLAYED_MONTH, displayedMonth || today);
+
+  let displayedMonthStore = writable<Moment>(displayedMonth);
+  setContext(DISPLAYED_MONTH, displayedMonthStore);
 
   let month: IMonth;
   let daysOfWeek: string[];
@@ -66,21 +44,10 @@
   let popoverMetadata: IDayMetadata[];
   let hoveredDay = writable<HTMLElement>(null);
 
-  $: month = getMonth(displayedMonth, localeData);
+  $: month = getMonth($displayedMonthStore, localeData);
   $: daysOfWeek = getDaysOfWeek(today, localeData);
 
-  // Exports
-  export function incrementDisplayedMonth() {
-    displayedMonth = displayedMonth.clone().add(1, "month");
-  }
-
-  export function decrementDisplayedMonth() {
-    displayedMonth = displayedMonth.clone().subtract(1, "month");
-  }
-
-  export function resetDisplayedMonth() {
-    displayedMonth = today.clone();
-  }
+  const fileCache = new PeriodicNotesCache(app, sources);
 
   function openPopover() {
     showPopover = true;
@@ -119,20 +86,10 @@
 
 <div id="calendar-container" class="container">
   <Nav
-    incrementDisplayedMonth="{incrementDisplayedMonth}"
-    decrementDisplayedMonth="{decrementDisplayedMonth}"
-    resetDisplayedMonth="{resetDisplayedMonth}"
-    metadata="{getEvaluatedMetadata(
-      'month',
-      sources,
-      getSourceSettings,
-      displayedMonth,
-      today
-    )}"
-    onClickMonth="{onClickMonth}"
-    onContextMenuMonth="{onContextMenuMonth}"
-    onHoverMonth="{onHoverMonth}"
+    fileCache="{fileCache}"
     today="{today}"
+    getSourceSettings="{getSourceSettings}"
+    eventHandlers="{eventHandlers}"
     on:hoverDay="{updatePopover}"
     on:endHoverDay="{dismissPopover}"
   />
@@ -160,18 +117,11 @@
         <tr>
           {#if showWeekNums}
             <WeekNum
-              {...week}
-              metadata="{getEvaluatedMetadata(
-                'week',
-                sources,
-                getSourceSettings,
-                week.days[0],
-                today
-              )}"
-              onClick="{onClickWeek}"
-              onContextMenu="{onContextMenuWeek}"
-              onHover="{onHoverWeek}"
+              fileCache="{fileCache}"
               selectedId="{selectedId}"
+              getSourceSettings="{getSourceSettings}"
+              {...week}
+              {...eventHandlers}
               on:hoverDay="{updatePopover}"
               on:endHoverDay="{dismissPopover}"
             />
@@ -179,18 +129,11 @@
           {#each week.days as day (day.format())}
             <Day
               date="{day}"
+              fileCache="{fileCache}"
+              getSourceSettings="{getSourceSettings}"
               today="{today}"
-              metadata="{getEvaluatedMetadata(
-                'day',
-                sources,
-                getSourceSettings,
-                day,
-                today
-              )}"
               selectedId="{selectedId}"
-              onClick="{onClickDay}"
-              onContextMenu="{onContextMenuDay}"
-              onHover="{onHoverDay}"
+              {...eventHandlers}
               on:hoverDay="{updatePopover}"
               on:endHoverDay="{dismissPopover}"
             />

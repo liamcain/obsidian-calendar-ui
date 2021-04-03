@@ -1,4 +1,5 @@
 import type { Moment } from "moment";
+import type { TFile } from "obsidian";
 
 export interface IDot {
   isFilled: boolean;
@@ -35,12 +36,9 @@ export interface ICalendarSource {
   name: string;
   description?: string;
 
-  getDailyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
-  getWeeklyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
-  getMonthlyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
+  getMetadata?: (date: Moment, file: TFile) => Promise<IEvaluatedMetadata>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  defaultSettings: any;
+  defaultSettings: Record<string, string | number>;
   registerSettings?: (
     containerEl: HTMLElement,
     settings: ISourceSettings,

@@ -1,3 +1,4 @@
+import type { App, TFile } from "obsidian";
 import type { Locale, Moment } from "moment";
 import { SvelteComponentTyped } from "svelte";
 
@@ -40,9 +41,7 @@ export interface ICalendarSource {
   name: string;
   description?: string;
 
-  getDailyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
-  getWeeklyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
-  getMonthlyMetadata?: (date: Moment) => Promise<IEvaluatedMetadata>;
+  getMetadata?: (date: Moment, file: TFile) => Promise<IEvaluatedMetadata>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultSettings: any;
@@ -71,20 +70,10 @@ export interface IDayMetadata
     IEvaluatedMetadata {}
 
 export class Calendar extends SvelteComponentTyped<{
-  // Settings
+  app: App;
   showWeekNums: boolean;
   localeData?: Locale;
-
-  // Event Handlers
-  onHoverDay?: (date: Moment, targetEl: EventTarget) => void;
-  onHoverWeek?: (date: Moment, targetEl: EventTarget) => void;
-  onHoverMonth?: (date: Moment, targetEl: EventTarget) => void;
-  onClickDay?: (date: Moment, isMetaPressed: boolean) => void;
-  onClickWeek?: (date: Moment, isMetaPressed: boolean) => void;
-  onClickMonth?: (date: Moment, isMetaPressed: boolean) => void;
-  onContextMenuDay?: (date: Moment, event: MouseEvent) => boolean;
-  onContextMenuWeek?: (date: Moment, event: MouseEvent) => boolean;
-  onContextMenuMonth?: (date: Moment, event: MouseEvent) => boolean;
+  eventHandlers: CallableFunction[];
 
   // External sources
   selectedId?: string | null;

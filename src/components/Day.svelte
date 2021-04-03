@@ -2,42 +2,61 @@
 
 <script lang="ts">
   import type { Moment } from "moment";
-  import { getDateUID } from "obsidian-daily-notes-interface";
-  import { createEventDispatcher, getContext } from "svelte";
+  import type { TFile } from "obsidian";
+  import { getDateUID, IGranularity } from "obsidian-daily-notes-interface";
+  import { createEventDispatcher, getContext, onMount } from "svelte";
+  import type { Writable } from "svelte/store";
 
   import Dots from "./Dots.svelte";
   import MetadataResolver from "./MetadataResolver.svelte";
-  import { IS_MOBILE } from "../context";
-  import type { IDayMetadata } from "../types";
+  import { DISPLAYED_MONTH, IS_MOBILE } from "../context";
+  import type PeriodicNotesCache from "../fileStore";
+  import type { IDayMetadata, ISourceSettings } from "../types";
   import { isMetaPressed } from "../utils";
 
   // Properties
   export let date: Moment;
-  // let file: TFile | null;
-  export let metadata: Promise<IDayMetadata[]> | null;
+  export let fileCache: PeriodicNotesCache;
+  export let getSourceSettings: (sourceId: string) => ISourceSettings;
+
+  let file: TFile | null;
 
   export let onHover: (
+    periodicity: IGranularity,
     date: Moment,
+    file: TFile,
     targetEl: EventTarget,
     isMetaPressed: boolean
   ) => boolean;
-  export let onClick: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onContextMenu: (date: Moment, event: MouseEvent) => boolean;
+  export let onClick: (
+    granularity: IGranularity,
+    date: Moment,
+    existingFile: TFile,
+    inNewSplit: boolean
+  ) => boolean;
+  export let onContextMenu: (
+    granularity: IGranularity,
+    date: Moment,
+    file: TFile,
+    event: MouseEvent
+  ) => boolean;
 
   // Global state
   export let today: Moment;
-  export let displayedMonth: Moment = null;
   export let selectedId: string = null;
-
-  let isMobile = getContext(IS_MOBILE);
-
+  const isMobile = getContext<boolean>(IS_MOBILE);
+  const displayedMonth = getContext<Writable<Moment>>(DISPLAYED_MONTH);
   const dispatch = createEventDispatcher();
-  let dayEl: HTMLElement;
 
-  // window.app.dragManager.handleDrag(foo, (e) => window.app.dragManager.dragFile(e, ))
+  let metadata: Promise<IDayMetadata[]> | null;
+
+  fileCache.store.subscribe(() => {
+    file = fileCache.getFile(date, "day");
+    metadata = fileCache.getEvaluatedMetadata("day", date, getSourceSettings);
+  });
 
   function handleClick(event: MouseEvent, meta: IDayMetadata) {
-    onClick?.(date, isMetaPressed(event));
+    onClick?.("day", date, file, isMetaPressed(event));
     if (isMobile) {
       dispatch("hoverDay", {
         date,
@@ -48,7 +67,7 @@
   }
 
   function handleHover(event: PointerEvent, meta: IDayMetadata) {
-    onHover?.(date, event.target, isMetaPressed(event));
+    onHover?.("day", date, file, event.target, isMetaPressed(event));
     dispatch("hoverDay", {
       date,
       metadata: meta,
@@ -66,15 +85,18 @@
 <td>
   <MetadataResolver metadata="{metadata}" let:metadata>
     <div
-      bind:this="{dayEl}"
       class="day"
       class:active="{selectedId === getDateUID(date, 'day')}"
-      class:adjacent-month="{!date.isSame(displayedMonth, 'month')}"
+      class:adjacent-month="{!date.isSame($displayedMonth, 'month')}"
+      class:has-note="{!!file}"
       class:today="{date.isSame(today, 'day')}"
+      draggable="{true}"
       on:click="{(event) => handleClick(event, metadata)}"
-      on:contextmenu="{onContextMenu && ((e) => onContextMenu(date, e))}"
+      on:contextmenu="{onContextMenu &&
+        ((e) => onContextMenu('day', date, file, e))}"
       on:pointerenter="{(event) => handleHover(event, metadata)}"
       on:pointerleave="{endHover}"
+      on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
     >
       {date.format("D")}
       <Dots metadata="{metadata}" />

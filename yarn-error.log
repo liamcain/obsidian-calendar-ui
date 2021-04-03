@@ -1,30 +1,20 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js
+  /usr/local/bin/node /usr/local/Cellar/yarn/1.22.4/libexec/bin/yarn.js --force
 
 PATH: 
-  C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Heroku\bin;C:\Program Files (x86)\git\cmd;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files (x86)\Yarn\bin\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\dotnet\;C:\Users\Liam\AppData\Local\Microsoft\WindowsApps;C:\Users\Liam\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Liam\AppData\Local\GitHubDesktop\bin;C:\Users\Liam\AppData\Local\Yarn\bin;C:\Users\Liam\AppData\Roaming\npm
+  /usr/local/Cellar/pyenv-virtualenv/1.1.5/shims:/Users/liam/.pyenv/shims:/Users/liam/.emacs.d/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/usr/local/Cellar/pyenv-virtualenv/1.1.5/shims:/Users/liam/.pyenv/shims:/Users/liam/.emacs.d/bin:/Users/liam/.zinit/plugins/junegunn---fzf-bin:/Users/liam/.zinit/polaris/bin:/usr/local/opt/fzf/bin
 
 Yarn version: 
-  1.22.5
+  1.22.4
 
 Node version: 
-  14.15.0
+  14.13.0
 
 Platform: 
-  win32 x64
+  darwin x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2fpopperjs__svelte: Not found
-      at Request.params.callback [as _callback] (C:\Program Files (x86)\Yarn\lib\cli.js:66097:18)
-      at Request.self.callback (C:\Program Files (x86)\Yarn\lib\cli.js:140749:22)
-      at Request.emit (events.js:315:20)
-      at Request.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:141721:10)
-      at Request.emit (events.js:315:20)
-      at IncomingMessage.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:141643:12)
-      at Object.onceWrapper (events.js:421:28)
-      at IncomingMessage.emit (events.js:327:22)
-      at endReadableNT (_stream_readable.js:1327:12)
-      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+  Error: ENOSPC: no space left on device, copyfile '/Users/liam/Projects/obsidian-daily-notes-interface/node_modules/lodash/_baseToPairs.js' -> '/Users/liam/Library/Caches/Yarn/v6/npm-obsidian-daily-notes-interface-0.9.0-25f75600-8a18-42a3-8252-0029bbef207a-1617391060784/node_modules/obsidian-daily-notes-interface/node_modules/lodash/_baseToPairs.js'
 
 npm manifest: 
   {
@@ -39,14 +29,16 @@ npm manifest:
     "scripts": {
       "lint": "svelte-check && eslint . --ext .ts",
       "build": "npm run lint && rollup -c",
+      "build:nolint": "rollup -c",
       "test": "jest",
       "test:watch": "yarn test -- --watch"
     },
     "dependencies": {
       "@popperjs/core": "2.8.6",
       "@popperjs/svelte": "0.1.1",
-      "obsidian-daily-notes-interface": "0.7.3",
-      "svelte": "3.32.3",
+      "obsidian-daily-notes-interface": "../obsidian-daily-notes-interface",
+      "svelte": "3.35.0",
+      "svelte-portal": "2.1.1",
       "tslib": "2.1.0"
     },
     "devDependencies": {
@@ -54,7 +46,6 @@ npm manifest:
       "@rollup/plugin-node-resolve": "11.1.1",
       "@rollup/plugin-typescript": "8.1.1",
       "@tsconfig/svelte": "1.0.10",
-      "@types/popperjs__svelte": "0.1.1",
       "@types/moment": "2.13.0",
       "@types/node": "14.14.25",
       "@typescript-eslint/eslint-plugin": "4.15.0",
@@ -4102,6 +4093,11 @@ Lockfile:
       svelte-preprocess "^4.0.0"
       typescript "*"
   
+  svelte-portal@2.1.1:
+    version "2.1.1"
+    resolved "https://registry.yarnpkg.com/svelte-portal/-/svelte-portal-2.1.1.tgz#7285d19cffffc25bd1d28f98fb5d8173643c326d"
+    integrity sha512-B61Bem/3cqgPGVMRM09RhEmZKBGbv3EFVO15GWbFWltNy9dN6sdLK5rV5VEOdZRDNaqgYai9caCHMDuYMpW/1w==
+  
   svelte-preprocess@4.6.8:
     version "4.6.8"
     resolved "https://registry.yarnpkg.com/svelte-preprocess/-/svelte-preprocess-4.6.8.tgz#bad8a3a1a03163f3941f0dc264b64a40c44a7ae0"
@@ -4122,10 +4118,10 @@ Lockfile:
       detect-indent "^6.0.0"
       strip-indent "^3.0.0"
   
-  svelte@3.32.3:
-    version "3.32.3"
-    resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.32.3.tgz#db0c50c65573ecffe4e2f4924e4862d8f9feda74"
-    integrity sha512-5etu/wDwtewhnYO/631KKTjSmFrKohFLWNm1sWErVHXqGZ8eJLqrW0qivDSyYTcN8GbUqsR4LkIhftNFsjNehg==
+  svelte@3.35.0:
+    version "3.35.0"
+    resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.35.0.tgz#e0d0ba60c4852181c2b4fd851194be6fda493e65"
+    integrity sha512-gknlZkR2sXheu/X+B7dDImwANVvK1R0QGQLd8CNIfxxGPeXBmePnxfzb6fWwTQRsYQG7lYkZXvpXJvxvpsoB7g==
   
   symbol-tree@^3.2.4:
     version "3.2.4"
