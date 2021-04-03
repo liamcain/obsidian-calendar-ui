@@ -79,12 +79,14 @@
     <div
       class="week-num"
       class:active="{selectedId === getDateUID(days[0], 'week')}"
+      draggable="{true}"
       on:click="{onClick &&
         ((e) => onClick('week', startOfWeek, file, isMetaPressed(e)))}"
       on:contextmenu="{onContextMenu &&
         ((e) => onContextMenu('week', days[0], file, e))}"
       on:pointerenter="{(event) => handleHover(event, metadata)}"
       on:pointerleave="{endHover}"
+      on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
     >
       {weekNum}
       <Dots metadata="{metadata}" />

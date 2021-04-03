@@ -9,10 +9,20 @@ import pkg from "./package.json";
 export default {
   input: "src/index.ts",
   output: [
-    { file: pkg.module, format: "es", name: "obsidian-calendar-ui" },
-    { file: pkg.main, format: "umd", name: "obsidian-calendar-ui" },
+    {
+      file: pkg.module,
+      format: "es",
+      name: "obsidian-calendar-ui",
+      globals: "obsidian",
+    },
+    {
+      file: pkg.main,
+      format: "umd",
+      name: "obsidian-calendar-ui",
+      globals: "obsidian",
+    },
   ],
-  external: ["fs", "os", "path"],
+  external: ["obsidian"],
   plugins: [
     svelte({
       emitCss: false,
