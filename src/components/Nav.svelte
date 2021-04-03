@@ -1,37 +1,43 @@
 <script lang="ts">
+  import { getContext } from "svelte";
+  import type { Writable } from "svelte/store";
   import type { Moment } from "moment";
 
   import Arrow from "./Arrow.svelte";
+  import type PeriodicNotesCache from "../fileStore";
+  import { DISPLAYED_MONTH } from "../context";
   import Dot from "./Dot.svelte";
   import Month from "./Month.svelte";
-  import type { IDayMetadata } from "../types";
+  import type { ISourceSettings } from "../types";
 
-  export let displayedMonth: Moment;
+  export let getSourceSettings: (sourceId: string) => ISourceSettings;
+  export let fileCache: PeriodicNotesCache;
   export let today: Moment;
-  export let metadata: Promise<IDayMetadata[]> | null;
+  export let eventHandlers: CallableFunction[];
 
-  export let onHoverMonth: (
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onClickMonth: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onContextMenuMonth: (date: Moment, event: MouseEvent) => boolean;
+  let displayedMonth = getContext<Writable<Moment>>(DISPLAYED_MONTH);
 
-  export let resetDisplayedMonth: () => void;
-  export let incrementDisplayedMonth: () => void;
-  export let decrementDisplayedMonth: () => void;
+  function incrementDisplayedMonth() {
+    displayedMonth.update((month) => month.clone().add(1, "month"));
+  }
+
+  function decrementDisplayedMonth() {
+    displayedMonth.update((month) => month.clone().subtract(1, "month"));
+  }
+
+  function resetDisplayedMonth() {
+    displayedMonth.set(today.clone());
+  }
 
   let showingCurrentMonth: boolean;
-  $: showingCurrentMonth = displayedMonth.isSame(today, "month");
+  $: showingCurrentMonth = $displayedMonth.isSame(today, "month");
 </script>
 
 <div class="nav">
   <Month
-    onClick="{onClickMonth}"
-    onHover="{onHoverMonth}"
-    onContextMenu="{onContextMenuMonth}"
-    metadata="{metadata}"
+    fileCache="{fileCache}"
+    getSourceSettings="{getSourceSettings}"
+    {...eventHandlers}
     on:hoverDay
     on:endHoverDay
   />
