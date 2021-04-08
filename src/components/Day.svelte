@@ -11,7 +11,11 @@
   import MetadataResolver from "./MetadataResolver.svelte";
   import { DISPLAYED_MONTH, IS_MOBILE } from "../context";
   import type PeriodicNotesCache from "../fileStore";
-  import type { IDayMetadata, ISourceSettings } from "../types";
+  import type {
+    IDayMetadata,
+    IHTMLAttributes,
+    ISourceSettings,
+  } from "../types";
   import { isMetaPressed } from "../utils";
 
   // Properties
@@ -75,10 +79,29 @@
     });
   }
 
-  function endHover(event: PointerEvent) {
+  function endHover(event: MouseEvent) {
     dispatch("endHoverDay", {
       target: event.target,
     });
+  }
+
+  function handleContextmenu(event: MouseEvent) {
+    onContextMenu?.("day", date, file, event);
+    endHover(event);
+  }
+
+  function getAttributes(metadata: IDayMetadata[]): IHTMLAttributes {
+    if (!metadata) {
+      return {};
+    }
+    return metadata
+      .filter((meta) => meta.display === "calendar-and-menu")
+      .reduce((acc, meta) => {
+        return {
+          ...acc,
+          ...meta.attrs,
+        };
+      }, {});
   }
 </script>
 
@@ -91,9 +114,9 @@
       class:has-note="{!!file}"
       class:today="{date.isSame(today, 'day')}"
       draggable="{true}"
+      {...getAttributes(metadata)}
       on:click="{(event) => handleClick(event, metadata)}"
-      on:contextmenu="{onContextMenu &&
-        ((e) => onContextMenu('day', date, file, e))}"
+      on:contextmenu="{handleContextmenu}"
       on:pointerenter="{(event) => handleHover(event, metadata)}"
       on:pointerleave="{endHover}"
       on:dragstart="{(event) => fileCache.onDragStart(event, file)}"

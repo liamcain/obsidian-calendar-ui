@@ -6,8 +6,12 @@
   export let centered: boolean = true;
   export let metadata: IDayMetadata[];
 
+  const MAX_DOTS_PER_DAY = 8;
+
   let sortedMeta: IDayMetadata[];
-  $: sortedMeta = metadata && metadata.sort((a, b) => a.order - b.order);
+  $: sortedMeta =
+    metadata &&
+    metadata.sort((a, b) => a.order - b.order).slice(0, MAX_DOTS_PER_DAY);
 </script>
 
 <div class="dot-container" class:centered>
