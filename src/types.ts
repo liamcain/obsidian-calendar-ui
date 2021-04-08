@@ -12,10 +12,13 @@ export interface IWeek {
 
 export type IMonth = IWeek[];
 
+export type IHTMLAttributes = Record<string, string | number | boolean>;
+
 export interface IEvaluatedMetadata {
-  value: number;
+  value: number | string;
   goal?: number;
   dots: IDot[];
+  attrs?: IHTMLAttributes;
 }
 
 export type ISourceDisplayOption = "calendar-and-menu" | "menu" | "none";

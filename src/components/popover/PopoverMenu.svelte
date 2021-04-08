@@ -17,6 +17,7 @@
   let menuItems: IDayMetadata[];
   $: menuItems = (metadata || [])
     .filter((meta) => ["menu", "calendar-and-menu"].includes(meta.display))
+    .filter((meta) => meta.value !== undefined)
     .sort((a, b) => a.order - b.order);
 </script>
 

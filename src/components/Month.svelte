@@ -3,7 +3,10 @@
   import type { TFile } from "obsidian";
   import { createEventDispatcher, getContext } from "svelte";
   import type { Writable } from "svelte/store";
-  import type { IGranularity } from "obsidian-daily-notes-interface";
+  import {
+    appHasMonthlyNotesPluginLoaded,
+    IGranularity,
+  } from "obsidian-daily-notes-interface";
 
   import { DISPLAYED_MONTH } from "../context";
   import Dots from "./Dots.svelte";
@@ -85,7 +88,9 @@
         {$displayedMonth.format("YYYY")}
       </span>
     </span>
-    <Dots metadata="{metadata}" centered="{false}" />
+    {#if appHasMonthlyNotesPluginLoaded()}
+      <Dots metadata="{metadata}" centered="{false}" />
+    {/if}
   </div>
 </MetadataResolver>
 

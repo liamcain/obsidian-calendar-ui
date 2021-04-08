@@ -84,9 +84,9 @@
         ((e) => onClick('week', startOfWeek, file, isMetaPressed(e)))}"
       on:contextmenu="{onContextMenu &&
         ((e) => onContextMenu('week', days[0], file, e))}"
+      on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
       on:pointerenter="{(event) => handleHover(event, metadata)}"
       on:pointerleave="{endHover}"
-      on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
     >
       {weekNum}
       <Dots metadata="{metadata}" />
