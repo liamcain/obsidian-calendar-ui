@@ -1,5 +1,6 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
+import type { IGranularity } from "obsidian-daily-notes-interface";
 
 export interface IDot {
   isFilled: boolean;
@@ -39,7 +40,11 @@ export interface ICalendarSource {
   name: string;
   description?: string;
 
-  getMetadata?: (date: Moment, file: TFile) => Promise<IEvaluatedMetadata>;
+  getMetadata?: (
+    granularity: IGranularity,
+    date: Moment,
+    file: TFile
+  ) => Promise<IEvaluatedMetadata>;
 
   defaultSettings: Record<string, string | number>;
   registerSettings?: (

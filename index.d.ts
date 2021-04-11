@@ -1,5 +1,6 @@
-import type { App, TFile } from "obsidian";
 import type { Locale, Moment } from "moment";
+import type { App, TFile } from "obsidian";
+import type { IGranularity } from "obsidian-daily-notes-interface";
 import { SvelteComponentTyped } from "svelte";
 
 export type ILocaleOverride = "system-default" | string;
@@ -41,7 +42,11 @@ export interface ICalendarSource {
   name: string;
   description?: string;
 
-  getMetadata?: (date: Moment, file: TFile) => Promise<IEvaluatedMetadata>;
+  getMetadata?: (
+    granularity: IGranularity,
+    date: Moment,
+    file: TFile
+  ) => Promise<IEvaluatedMetadata>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultSettings: any;
