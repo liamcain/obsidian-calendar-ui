@@ -1,15 +1,10 @@
 <script lang="ts">
-  import { getContext } from "svelte";
   import type { IDayMetadata } from "src/types";
-
-  import { IS_MOBILE } from "../../context";
 
   export let menuItems: IDayMetadata[];
 
   let showcaseItems: IDayMetadata[];
   let overflowItems: IDayMetadata[];
-
-  const isMobile = getContext(IS_MOBILE);
 
   $: {
     showcaseItems = (menuItems || []).slice(0, 2);
@@ -17,7 +12,7 @@
   }
 </script>
 
-<div class="container" class:is-mobile="{isMobile}">
+<div class="container">
   <div class="showcase">
     {#each showcaseItems as showcaseItem}
       <div class="showcase-item">
@@ -72,7 +67,7 @@
     padding: 24px;
   }
 
-  .container.is-mobile {
+  :global(.is-mobile) .container {
     box-shadow: unset;
     padding: 0;
   }

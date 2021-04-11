@@ -37,6 +37,7 @@
   <Month
     fileCache="{fileCache}"
     getSourceSettings="{getSourceSettings}"
+    resetDisplayedMonth="{resetDisplayedMonth}"
     {...eventHandlers}
     on:hoverDay
     on:endHoverDay

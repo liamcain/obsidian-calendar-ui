@@ -59,6 +59,11 @@ export default class PeriodicNotesCache {
       app.vault.on("modify", this.onFileModified.bind(this));
       this.initialize();
     });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const workspace = app.workspace as any;
+    workspace.on("periodic-notes:settings-updated", this.initialize, this);
+    workspace.on("calendar:metadata-updated", this.initialize, this);
   }
 
   public onFileCreated(file: TAbstractFile): void {
@@ -127,7 +132,8 @@ export default class PeriodicNotesCache {
 
     const metadata = [];
     for (const source of this.sources) {
-      const evaluatedMetadata = (await source.getMetadata?.(date, file)) || {};
+      const evaluatedMetadata =
+        (await source.getMetadata?.(granularity, date, file)) || {};
       const sourceSettings = getSourceSettings(source.id);
 
       metadata.push({

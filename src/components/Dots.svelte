@@ -6,19 +6,17 @@
   export let centered: boolean = true;
   export let metadata: IDayMetadata[];
 
-  const MAX_DOTS_PER_DAY = 8;
+  const MAX_DOTS_PER_SOURCE = 5;
 
   let sortedMeta: IDayMetadata[];
-  $: sortedMeta =
-    metadata &&
-    metadata.sort((a, b) => a.order - b.order).slice(0, MAX_DOTS_PER_DAY);
+  $: sortedMeta = metadata && metadata.sort((a, b) => a.order - b.order);
 </script>
 
 <div class="dot-container" class:centered>
   {#if metadata}
     {#each sortedMeta as { color, display, dots = [] }}
       {#if display === "calendar-and-menu"}
-        {#each dots as dot}
+        {#each dots.slice(0, MAX_DOTS_PER_SOURCE) as dot}
           <Dot {...dot} color="{color}" />
         {/each}
       {/if}

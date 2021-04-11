@@ -36,6 +36,7 @@
     file: TFile,
     event: MouseEvent
   ) => boolean;
+  export let resetDisplayedMonth: () => void;
 
   let displayedMonth = getContext<Writable<Moment>>(DISPLAYED_MONTH);
   let metadata: Promise<IDayMetadata[]> | null;
@@ -53,6 +54,10 @@
   });
 
   function handleHover(event: PointerEvent, meta: IDayMetadata) {
+    if (!appHasMonthlyNotesPluginLoaded()) {
+      return;
+    }
+
     const date = $displayedMonth;
     onHover?.("month", date, file, event.target, isMetaPressed(event));
     dispatch("hoverDay", {
@@ -67,14 +72,22 @@
       target: event.target,
     });
   }
+
+  function handleClick(event: MouseEvent) {
+    if (appHasMonthlyNotesPluginLoaded()) {
+      onClick?.("month", $displayedMonth, file, isMetaPressed(event));
+    } else {
+      resetDisplayedMonth();
+    }
+  }
 </script>
 
 <MetadataResolver metadata="{metadata}" let:metadata>
   <div
     draggable="{true}"
-    on:click="{onClick &&
-      ((e) => onClick('month', $displayedMonth, file, isMetaPressed(e)))}"
-    on:contextmenu="{onContextMenu &&
+    on:click="{handleClick}"
+    on:contextmenu="{metadata &&
+      onContextMenu &&
       ((e) => onContextMenu('month', $displayedMonth, file, e))}"
     on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
     on:pointerenter="{(event) => handleHover(event, metadata)}"
@@ -88,7 +101,7 @@
         {$displayedMonth.format("YYYY")}
       </span>
     </span>
-    {#if appHasMonthlyNotesPluginLoaded()}
+    {#if metadata}
       <Dots metadata="{metadata}" centered="{false}" />
     {/if}
   </div>
