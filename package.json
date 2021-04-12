@@ -1,6 +1,6 @@
 {
   "name": "obsidian-calendar-ui",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "description": "Calendar UI that powers obsidian-calendar-plugin",
   "author": "liamcain",
   "main": "dist/index.js",
@@ -15,16 +15,13 @@
     "test:watch": "yarn test -- --watch"
   },
   "dependencies": {
-    "@popperjs/core": "2.8.6",
+    "@popperjs/core": "2.9.2",
     "@popperjs/svelte": "0.1.1",
-    "obsidian-daily-notes-interface": "../obsidian-daily-notes-interface",
-    "svelte": "3.35.0",
-    "svelte-portal": "2.1.1",
-    "tslib": "2.1.0"
-  },
-  "peerDependencies": {
     "obsidian": "obsidianmd/obsidian-api#master",
-    "obsidian-daily-notes-interface": "../obsidian-daily-notes-interface"
+    "obsidian-daily-notes-interface": "0.9.2",
+    "svelte": "3.37.0",
+    "svelte-portal": "2.1.2",
+    "tslib": "2.2.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "17.1.0",

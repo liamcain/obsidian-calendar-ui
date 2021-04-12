@@ -13,6 +13,9 @@ describe("getMonth", () => {
 
   describe("january", () => {
     it("creates correct calendar starting on Sunday", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 0;
+
       const monthData = getMonth(
         moment({ year: 2020, month: 0, day: 1 }),
         "sunday"
@@ -31,6 +34,9 @@ describe("getMonth", () => {
     });
 
     it("creates correct calendar starting on Monday", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 1;
+
       const monthData = getMonth(
         moment({ year: 2020, month: 0, day: 1 }),
         "monday"
@@ -51,6 +57,9 @@ describe("getMonth", () => {
 
   describe("february", () => {
     it("creates correct calendar starting on Sunday", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 0;
+
       const monthData = getMonth(
         moment({ year: 2020, month: 1, day: 1 }),
         "sunday"
@@ -69,6 +78,9 @@ describe("getMonth", () => {
     });
 
     it("creates correct calendar starting on Monday", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 1;
+
       const monthData = getMonth(
         moment({ year: 2020, month: 1, day: 1 }),
         "monday"
