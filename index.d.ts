@@ -1,4 +1,6 @@
 import type { Locale, Moment } from "moment";
+import type { App, TFile } from "obsidian";
+import type { IGranularity } from "obsidian-daily-notes-interface";
 import { SvelteComponentTyped } from "svelte";
 
 export type ILocaleOverride = "system-default" | string;
@@ -13,38 +15,78 @@ export type IWeekStartOption =
   | "locale";
 
 export interface IDot {
-  className: string;
-  color: string;
   isFilled: boolean;
 }
 
-export interface IDayMetadata {
-  classes?: string[];
-  dataAttributes?: Record<string, string>;
-  dots?: IDot[];
+export interface IEvaluatedMetadata {
+  value: number | string;
+  goal?: number;
+  dots: IDot[];
 }
+
+export type ISourceDisplayOption = "calendar-and-menu" | "menu" | "none";
+
+export interface ISourceSettings {
+  color: string;
+  display: ISourceDisplayOption;
+  order: number;
+}
+
+export interface IDayMetadata
+  extends ICalendarSource,
+    ISourceSettings,
+    IEvaluatedMetadata {}
 
 export interface ICalendarSource {
-  getDailyMetadata?: (date: Moment) => Promise<IDayMetadata>;
-  getWeeklyMetadata?: (date: Moment) => Promise<IDayMetadata>;
+  id: string;
+  name: string;
+  description?: string;
+
+  getMetadata?: (
+    granularity: IGranularity,
+    date: Moment,
+    file: TFile
+  ) => Promise<IEvaluatedMetadata>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  defaultSettings: any;
+  registerSettings?: (
+    containerEl: HTMLElement,
+    settings: ISourceSettings,
+    saveSettings: (settings: Partial<ISourceSettings>) => void
+  ) => void;
 }
 
+export type IHTMLAttributes = Record<string, string | number | boolean>;
+
+export interface IEvaluatedMetadata {
+  value: number;
+  goal?: number;
+  dots: IDot[];
+  attrs?: IHTMLAttributes;
+}
+
+export interface ISourceSettings {
+  color: string;
+  display: ISourceDisplayOption;
+  order: number;
+}
+
+export interface IDayMetadata
+  extends ICalendarSource,
+    ISourceSettings,
+    IEvaluatedMetadata {}
+
 export class Calendar extends SvelteComponentTyped<{
-  // Settings
+  app: App;
   showWeekNums: boolean;
   localeData?: Locale;
-
-  // Event Handlers
-  onHoverDay?: (date: Moment, targetEl: EventTarget) => void;
-  onHoverWeek?: (date: Moment, targetEl: EventTarget) => void;
-  onClickDay?: (date: Moment, isMetaPressed: boolean) => void;
-  onClickWeek?: (date: Moment, isMetaPressed: boolean) => void;
-  onContextMenuDay?: (date: Moment, event: MouseEvent) => boolean;
-  onContextMenuWeek?: (date: Moment, event: MouseEvent) => boolean;
+  eventHandlers: CallableFunction[];
 
   // External sources
   selectedId?: string | null;
   sources?: ICalendarSource[];
+  getSourceSettings: (sourceId: string) => ISourceSettings;
 
   // Override-able local state
   today?: Moment;

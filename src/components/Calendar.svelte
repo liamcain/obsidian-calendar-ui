@@ -1,75 +1,97 @@
 <svelte:options immutable />
 
 <script lang="ts">
+  import { App, debounce } from "obsidian";
   import type { Locale, Moment } from "moment";
+  import { setContext } from "svelte";
+  import { writable } from "svelte/store";
 
+  import type { IDayMetadata } from "src/types";
+
+  import { DISPLAYED_MONTH, IS_MOBILE } from "../context";
+  import PopoverMenu from "./popover/PopoverMenu.svelte";
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import { getDailyMetadata, getWeeklyMetadata } from "../metadata";
-  import type { ICalendarSource, IMonth } from "../types";
+  import type { ICalendarSource, IMonth, ISourceSettings } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
+  import PeriodicNotesCache from "../fileStore";
 
-  // Localization
   export let localeData: Locale;
-
-  // Settings
   export let showWeekNums: boolean = false;
-
-  // Event Handlers
-  export let onHoverDay: (
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onHoverWeek: (
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
-  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
-  export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let eventHandlers: CallableFunction[];
 
   // External sources (All optional)
+  export let app: App;
   export let sources: ICalendarSource[] = [];
+  export let getSourceSettings: (sourceId: string) => ISourceSettings;
   export let selectedId: string;
 
   // Override-able local state
   export let today: Moment = window.moment();
-  export let displayedMonth = today;
+  export let displayedMonth: Moment = today;
+
+  setContext(IS_MOBILE, (window.app as any).isMobile);
+
+  let displayedMonthStore = writable<Moment>(displayedMonth);
+  setContext(DISPLAYED_MONTH, displayedMonthStore);
 
   let month: IMonth;
   let daysOfWeek: string[];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let isMobile = (window.app as any).isMobile;
+  let hoverTimeout: number;
+  let showPopover: boolean = false;
+  let popoverMetadata: IDayMetadata[];
+  let hoveredDay = writable<HTMLElement>(null);
 
-  $: month = getMonth(displayedMonth, localeData);
+  $: month = getMonth($displayedMonthStore, localeData);
   $: daysOfWeek = getDaysOfWeek(today, localeData);
 
-  // Exports
-  export function incrementDisplayedMonth() {
-    displayedMonth = displayedMonth.clone().add(1, "month");
+  const fileCache = new PeriodicNotesCache(app, sources);
+
+  function openPopover() {
+    showPopover = true;
   }
 
-  export function decrementDisplayedMonth() {
-    displayedMonth = displayedMonth.clone().subtract(1, "month");
+  function updatePopover(event: CustomEvent) {
+    const { metadata, target } = event.detail;
+
+    if (!showPopover) {
+      window.clearTimeout(hoverTimeout);
+      hoverTimeout = window.setTimeout(() => {
+        if ($hoveredDay === target) {
+          openPopover();
+        }
+      }, 750);
+    }
+
+    if ($hoveredDay !== target) {
+      hoveredDay.set(target);
+      popoverMetadata = metadata;
+    }
   }
 
-  export function resetDisplayedMonth() {
-    displayedMonth = today.clone();
-  }
+  const dismissPopover = debounce(
+    (event: CustomEvent) => {
+      // if the user didn't hover onto another day
+      if ($hoveredDay === event.detail.target) {
+        hoveredDay.set(null);
+        showPopover = false;
+      }
+    },
+    250,
+    true
+  );
 </script>
 
-<div id="calendar-container" class="container" class:is-mobile="{isMobile}">
+<div id="calendar-container" class="container">
   <Nav
+    fileCache="{fileCache}"
     today="{today}"
-    displayedMonth="{displayedMonth}"
-    incrementDisplayedMonth="{incrementDisplayedMonth}"
-    decrementDisplayedMonth="{decrementDisplayedMonth}"
-    resetDisplayedMonth="{resetDisplayedMonth}"
+    getSourceSettings="{getSourceSettings}"
+    eventHandlers="{eventHandlers}"
+    on:hoverDay="{updatePopover}"
+    on:endHoverDay="{dismissPopover}"
   />
   <table class="calendar">
     <colgroup>
@@ -95,30 +117,36 @@
         <tr>
           {#if showWeekNums}
             <WeekNum
-              {...week}
-              metadata="{getWeeklyMetadata(sources, week.days[0], today)}"
-              onClick="{onClickWeek}"
-              onContextMenu="{onContextMenuWeek}"
-              onHover="{onHoverWeek}"
+              fileCache="{fileCache}"
               selectedId="{selectedId}"
+              getSourceSettings="{getSourceSettings}"
+              {...week}
+              {...eventHandlers}
+              on:hoverDay="{updatePopover}"
+              on:endHoverDay="{dismissPopover}"
             />
           {/if}
           {#each week.days as day (day.format())}
             <Day
               date="{day}"
+              fileCache="{fileCache}"
+              getSourceSettings="{getSourceSettings}"
               today="{today}"
-              displayedMonth="{displayedMonth}"
-              onClick="{onClickDay}"
-              onContextMenu="{onContextMenuDay}"
-              onHover="{onHoverDay}"
-              metadata="{getDailyMetadata(sources, day, today)}"
               selectedId="{selectedId}"
+              {...eventHandlers}
+              on:hoverDay="{updatePopover}"
+              on:endHoverDay="{dismissPopover}"
             />
           {/each}
         </tr>
       {/each}
     </tbody>
   </table>
+  <PopoverMenu
+    referenceElement="{$hoveredDay}"
+    metadata="{popoverMetadata}"
+    isVisible="{showPopover}"
+  />
 </div>
 
 <style>
@@ -143,14 +171,6 @@
     padding: 0 8px;
   }
 
-  .container.is-mobile {
-    padding: 0;
-  }
-
-  th {
-    text-align: center;
-  }
-
   .weekend {
     background-color: var(--color-background-weekend);
   }
@@ -166,6 +186,7 @@
     font-size: 0.6em;
     letter-spacing: 1px;
     padding: 4px;
+    text-align: center;
     text-transform: uppercase;
   }
 </style>

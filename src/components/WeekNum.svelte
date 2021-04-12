@@ -2,50 +2,94 @@
 
 <script lang="ts">
   import type { Moment } from "moment";
-  import { getDateUID } from "obsidian-daily-notes-interface";
+  import type { TFile } from "obsidian";
+  import { getDateUID, IGranularity } from "obsidian-daily-notes-interface";
+  import { createEventDispatcher } from "svelte";
 
-  import Dot from "./Dot.svelte";
+  import Dots from "./Dots.svelte";
+  import type PeriodicNotesCache from "../fileStore";
   import MetadataResolver from "./MetadataResolver.svelte";
-  import type { IDayMetadata } from "../types";
+  import type { IDayMetadata, ISourceSettings } from "../types";
   import { getStartOfWeek, isMetaPressed } from "../utils";
 
   // Properties
   export let weekNum: number;
   export let days: Moment[];
-  export let metadata: Promise<IDayMetadata> | null;
+  export let getSourceSettings: (sourceId: string) => ISourceSettings;
 
   // Event handlers
   export let onHover: (
+    periodicity: IGranularity,
     date: Moment,
+    file: TFile,
     targetEl: EventTarget,
     isMetaPressed: boolean
   ) => boolean;
-  export let onClick: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onContextMenu: (date: Moment, event: MouseEvent) => boolean;
+  export let onClick: (
+    granularity: IGranularity,
+    date: Moment,
+    existingFile: TFile,
+    inNewSplit: boolean
+  ) => boolean;
+  export let onContextMenu: (
+    granularity: IGranularity,
+    date: Moment,
+    file: TFile,
+    event: MouseEvent
+  ) => boolean;
+  export let fileCache: PeriodicNotesCache;
 
   // Global state;
   export let selectedId: string = null;
 
+  let file: TFile | null;
   let startOfWeek: Moment;
+  let metadata: Promise<IDayMetadata[]> | null;
   $: startOfWeek = getStartOfWeek(days);
+
+  fileCache.store.subscribe(() => {
+    file = fileCache.getFile(days[0], "week");
+    metadata = fileCache.getEvaluatedMetadata(
+      "week",
+      days[0],
+      getSourceSettings
+    );
+  });
+
+  const dispatch = createEventDispatcher();
+
+  function handleHover(event: PointerEvent, meta: IDayMetadata) {
+    onHover?.("week", days[0], file, event.target, isMetaPressed(event));
+    dispatch("hoverDay", {
+      date: days[0],
+      metadata: meta,
+      target: event.target,
+    });
+  }
+
+  function endHover(event: PointerEvent) {
+    dispatch("endHoverDay", {
+      target: event.target,
+    });
+  }
 </script>
 
 <td>
   <MetadataResolver metadata="{metadata}" let:metadata>
     <div
-      class="{`week-num ${metadata.classes.join(' ')}`}"
+      class="week-num"
       class:active="{selectedId === getDateUID(days[0], 'week')}"
-      on:click="{onClick && ((e) => onClick(startOfWeek, isMetaPressed(e)))}"
-      on:contextmenu="{onContextMenu && ((e) => onContextMenu(days[0], e))}"
-      on:pointerover="{onHover &&
-        ((e) => onHover(startOfWeek, e.target, isMetaPressed(e)))}"
+      draggable="{true}"
+      on:click="{onClick &&
+        ((e) => onClick('week', startOfWeek, file, isMetaPressed(e)))}"
+      on:contextmenu="{onContextMenu &&
+        ((e) => onContextMenu('week', days[0], file, e))}"
+      on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
+      on:pointerenter="{(event) => handleHover(event, metadata)}"
+      on:pointerleave="{endHover}"
     >
       {weekNum}
-      <div class="dot-container">
-        {#each metadata.dots as dot}
-          <Dot {...dot} />
-        {/each}
-      </div>
+      <Dots metadata="{metadata}" />
     </div>
   </MetadataResolver>
 </td>
@@ -79,13 +123,5 @@
   .active {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
-  }
-
-  .dot-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    line-height: 6px;
-    min-height: 6px;
   }
 </style>

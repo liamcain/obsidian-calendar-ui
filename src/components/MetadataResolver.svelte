@@ -3,11 +3,13 @@
 <script lang="ts">
   import type { IDayMetadata } from "../types";
 
-  export let metadata: Promise<IDayMetadata> | null;
+  export let metadata: Promise<IDayMetadata[]> | null;
 </script>
 
 {#if metadata}
-  {#await metadata then resolvedMeta}
+  {#await metadata}
+    <slot metadata="{null}" />
+  {:then resolvedMeta}
     <slot metadata="{resolvedMeta}" />
   {/await}
 {:else}
