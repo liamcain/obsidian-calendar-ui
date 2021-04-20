@@ -44,14 +44,16 @@
   const dispatch = createEventDispatcher();
 
   let file: TFile | null;
-  fileCache.store.subscribe(() => {
+  function getMetadata() {
     file = fileCache.getFile($displayedMonth, "month");
     metadata = fileCache.getEvaluatedMetadata(
       "month",
       $displayedMonth,
       getSourceSettings
     );
-  });
+  }
+  fileCache.store.subscribe(getMetadata);
+  displayedMonth.subscribe(getMetadata);
 
   function handleHover(event: PointerEvent, meta: IDayMetadata) {
     if (!appHasMonthlyNotesPluginLoaded()) {

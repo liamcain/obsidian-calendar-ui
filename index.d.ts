@@ -1,5 +1,5 @@
 import type { Locale, Moment } from "moment";
-import type { App, TFile } from "obsidian";
+import type { Plugin, TFile } from "obsidian";
 import type { IGranularity } from "obsidian-daily-notes-interface";
 import { SvelteComponentTyped } from "svelte";
 
@@ -78,7 +78,7 @@ export interface IDayMetadata
     IEvaluatedMetadata {}
 
 export class Calendar extends SvelteComponentTyped<{
-  app: App;
+  plugin: Plugin;
   showWeekNums: boolean;
   localeData?: Locale;
   eventHandlers: CallableFunction[];

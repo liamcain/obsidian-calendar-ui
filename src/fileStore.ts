@@ -1,6 +1,5 @@
-import { App, TAbstractFile, TFile } from "obsidian";
 import type { Moment } from "moment";
-import { get, Writable, writable } from "svelte/store";
+import { App, Plugin, TAbstractFile, TFile } from "obsidian";
 import {
   getAllDailyNotes,
   getAllMonthlyNotes,
@@ -10,6 +9,7 @@ import {
   getDateUID,
   IGranularity,
 } from "obsidian-daily-notes-interface";
+import { get, Writable, writable } from "svelte/store";
 
 import type { ICalendarSource, IDayMetadata, ISourceSettings } from "./types";
 
@@ -46,24 +46,28 @@ export default class PeriodicNotesCache {
   public store: Writable<Record<PeriodicNoteID, TFile>>;
   private sources: ICalendarSource[];
 
-  constructor(app: App, sources: ICalendarSource[]) {
-    this.app = app;
+  constructor(plugin: Plugin, sources: ICalendarSource[]) {
+    this.app = plugin.app;
     this.sources = sources;
     this.store = writable<Record<PeriodicNoteID, TFile>>({});
 
-    // TODO register this to plugin
-    app.workspace.onLayoutReady(() => {
-      app.vault.on("create", this.onFileCreated.bind(this));
-      app.vault.on("delete", this.onFileDeleted.bind(this));
-      app.vault.on("rename", this.onFileRenamed.bind(this));
-      app.vault.on("modify", this.onFileModified.bind(this));
+    plugin.app.workspace.onLayoutReady(() => {
+      const { vault } = this.app;
+      plugin.registerEvent(vault.on("create", this.onFileCreated, this));
+      plugin.registerEvent(vault.on("delete", this.onFileDeleted, this));
+      plugin.registerEvent(vault.on("rename", this.onFileRenamed, this));
+      plugin.registerEvent(vault.on("modify", this.onFileModified, this));
       this.initialize();
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const workspace = app.workspace as any;
-    workspace.on("periodic-notes:settings-updated", this.initialize, this);
-    workspace.on("calendar:metadata-updated", this.initialize, this);
+    const workspace = this.app.workspace as any;
+    plugin.registerEvent(
+      workspace.on("periodic-notes:settings-updated", this.initialize, this)
+    );
+    plugin.registerEvent(
+      workspace.on("calendar:metadata-updated", this.initialize, this)
+    );
   }
 
   public onFileCreated(file: TAbstractFile): void {

@@ -1,7 +1,7 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import { App, debounce } from "obsidian";
+  import { Plugin, debounce } from "obsidian";
   import type { Locale, Moment } from "moment";
   import { setContext } from "svelte";
   import { writable } from "svelte/store";
@@ -22,7 +22,7 @@
   export let eventHandlers: CallableFunction[];
 
   // External sources (All optional)
-  export let app: App;
+  export let plugin: Plugin;
   export let sources: ICalendarSource[] = [];
   export let getSourceSettings: (sourceId: string) => ISourceSettings;
   export let selectedId: string;
@@ -31,7 +31,7 @@
   export let today: Moment = window.moment();
   export let displayedMonth: Moment = today;
 
-  setContext(IS_MOBILE, (window.app as any).isMobile);
+  setContext(IS_MOBILE, (plugin.app as any).isMobile);
 
   let displayedMonthStore = writable<Moment>(displayedMonth);
   setContext(DISPLAYED_MONTH, displayedMonthStore);
@@ -47,7 +47,7 @@
   $: month = getMonth($displayedMonthStore, localeData);
   $: daysOfWeek = getDaysOfWeek(today, localeData);
 
-  const fileCache = new PeriodicNotesCache(app, sources);
+  const fileCache = new PeriodicNotesCache(plugin, sources);
 
   function openPopover() {
     showPopover = true;
