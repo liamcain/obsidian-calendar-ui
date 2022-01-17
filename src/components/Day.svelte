@@ -155,6 +155,7 @@
 
   .today {
     color: var(--color-text-today);
+    font-weight: bold;
   }
 
   .day:active,
