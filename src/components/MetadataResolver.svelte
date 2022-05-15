@@ -1,17 +1,22 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import type { IDayMetadata } from "../types";
+  import type { IEvaluatedMetadata } from "../types";
 
-  export let metadata: Promise<IDayMetadata[]> | null;
+  export let metadata: Promise<IEvaluatedMetadata> | null;
+  let previouslyResolvedMeta: IEvaluatedMetadata | null = null;
+
+  $: metadata.then((resolved) => {
+    previouslyResolvedMeta = resolved;
+  });
 </script>
 
 {#if metadata}
   {#await metadata}
-    <slot metadata="{null}" />
+    <slot metadata="{previouslyResolvedMeta}" />
   {:then resolvedMeta}
     <slot metadata="{resolvedMeta}" />
   {/await}
 {:else}
-  <slot metadata="{null}" />
+  <slot metadata="{previouslyResolvedMeta}" />
 {/if}

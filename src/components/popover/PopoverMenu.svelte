@@ -2,16 +2,15 @@
   import { getContext } from "svelte";
   import Portal from "svelte-portal/src/Portal.svelte";
 
-  import type { IDayMetadata } from "src/types";
-
   import Box from "./Box.svelte";
   import { IS_MOBILE } from "../../context";
-  import Popper from "./Popper.svelte";
+
+  type IDayMetadata = any;
 
   export let referenceElement: HTMLElement;
   export let metadata: IDayMetadata[];
-  export let isVisible: boolean;
 
+  export let isVisible: boolean;
   const isMobile = getContext(IS_MOBILE);
 
   let menuItems: IDayMetadata[];
@@ -25,8 +24,8 @@
   <Box menuItems="{menuItems}" />
 {:else}
   <Portal target=".app-container">
-    <Popper referenceElement="{referenceElement}" isVisible="{isVisible}">
+    <!-- <Popper referenceElement="{referenceElement}" isVisible="{isVisible}">
       <Box menuItems="{menuItems}" />
-    </Popper>
+    </Popper> -->
   </Portal>
 {/if}

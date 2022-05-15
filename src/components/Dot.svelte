@@ -1,13 +1,11 @@
 <script lang="ts">
-  export let color: string;
-  export let isFilled: boolean;
-  export let isActive: boolean;
+  export let isFilled: boolean = false;
+  export let isActive: boolean = false;
 </script>
 
 <svg
   class="dot"
   class:active="{isActive}"
-  style="color:{color}"
   viewBox="0 0 6 6"
   xmlns="http://www.w3.org/2000/svg"
 >
@@ -19,15 +17,16 @@
     r="2"></circle>
 </svg>
 
-<style>
+<style lang="scss">
   .dot {
+    color: var(--color-dot);
     display: inline-block;
     height: 6px;
     width: 6px;
     margin: 0 1px;
-  }
 
-  .active {
-    color: var(--text-on-accent);
+    &.active {
+      color: var(--text-on-accent);
+    }
   }
 </style>

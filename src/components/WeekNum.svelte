@@ -2,64 +2,36 @@
 
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { TFile } from "obsidian";
-  import { getDateUID, IGranularity } from "obsidian-daily-notes-interface";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
+  import type { Writable } from "svelte/store";
+
+  import { TODAY } from "src/context";
+  import { evaluateMetadataFromSources } from "src/utils";
 
   import Dots from "./Dots.svelte";
-  import type PeriodicNotesCache from "../fileStore";
   import MetadataResolver from "./MetadataResolver.svelte";
-  import type { IDayMetadata, ISourceSettings } from "../types";
-  import { getStartOfWeek, isMetaPressed } from "../utils";
+  import type {
+    CalendarEventHandlers,
+    ICalendarSource,
+    IEvaluatedMetadata,
+  } from "../types";
+
+  const dispatch = createEventDispatcher();
 
   // Properties
   export let weekNum: number;
   export let days: Moment[];
-  export let getSourceSettings: (sourceId: string) => ISourceSettings;
+  export let sources: ICalendarSource[];
+  export let eventHandlers: CalendarEventHandlers;
 
-  // Event handlers
-  export let onHover: (
-    periodicity: IGranularity,
-    date: Moment,
-    file: TFile,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onClick: (
-    granularity: IGranularity,
-    date: Moment,
-    existingFile: TFile,
-    inNewSplit: boolean
-  ) => boolean;
-  export let onContextMenu: (
-    granularity: IGranularity,
-    date: Moment,
-    file: TFile,
-    event: MouseEvent
-  ) => boolean;
-  export let fileCache: PeriodicNotesCache;
+  let metadata: Promise<IEvaluatedMetadata>;
 
-  // Global state;
-  export let selectedId: string = null;
+  const today = getContext<Writable<Moment>>(TODAY);
 
-  let file: TFile | null;
-  let startOfWeek: Moment;
-  let metadata: Promise<IDayMetadata[]> | null;
-  $: startOfWeek = getStartOfWeek(days);
+  $: metadata = evaluateMetadataFromSources(sources, "week", days[0], $today);
 
-  fileCache.store.subscribe(() => {
-    file = fileCache.getFile(days[0], "week");
-    metadata = fileCache.getEvaluatedMetadata(
-      "week",
-      days[0],
-      getSourceSettings
-    );
-  });
-
-  const dispatch = createEventDispatcher();
-
-  function handleHover(event: PointerEvent, meta: IDayMetadata) {
-    onHover?.("week", days[0], file, event.target, isMetaPressed(event));
+  function handleHover(event: PointerEvent, meta: IEvaluatedMetadata) {
+    eventHandlers.onHover?.("week", days[0], event);
     dispatch("hoverDay", {
       date: days[0],
       metadata: meta,
@@ -78,23 +50,23 @@
   <MetadataResolver metadata="{metadata}" let:metadata>
     <div
       class="week-num"
-      class:active="{selectedId === getDateUID(days[0], 'week')}"
       draggable="{true}"
-      on:click="{onClick &&
-        ((e) => onClick('week', startOfWeek, file, isMetaPressed(e)))}"
-      on:contextmenu="{onContextMenu &&
-        ((e) => onContextMenu('week', days[0], file, e))}"
-      on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
+      on:click="{eventHandlers.onClick &&
+        ((e) => eventHandlers.onClick('week', days[0], e))}"
+      on:contextmenu="{eventHandlers.onContextMenu &&
+        ((e) => eventHandlers.onContextMenu('week', days[0], e))}"
       on:pointerenter="{(event) => handleHover(event, metadata)}"
       on:pointerleave="{endHover}"
     >
+      <!-- on:dragstart="{(event) => fileCache.onDragStart(event, file)}" -->
+      <!-- class:active="{selectedId === getDateUID(days[0], 'week')}" -->
       {weekNum}
       <Dots metadata="{metadata}" />
     </div>
   </MetadataResolver>
 </td>
 
-<style>
+<style lang="scss">
   td {
     border-right: 1px solid var(--background-modifier-border);
   }
@@ -110,18 +82,18 @@
     text-align: center;
     transition: background-color 0.1s ease-in, color 0.1s ease-in;
     vertical-align: baseline;
+
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    // &.active:hover {
+    //   background-color: var(--interactive-accent-hover);
+    // }
   }
 
-  .week-num:hover {
-    background-color: var(--interactive-hover);
-  }
-
-  .week-num.active:hover {
-    background-color: var(--interactive-accent-hover);
-  }
-
-  .active {
-    color: var(--text-on-accent);
-    background-color: var(--interactive-accent);
-  }
+  // .active {
+  //   color: var(--text-on-accent);
+  //   background-color: var(--interactive-accent);
+  // }
 </style>

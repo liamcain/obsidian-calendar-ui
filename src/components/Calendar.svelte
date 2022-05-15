@@ -1,56 +1,85 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import { App, debounce } from "obsidian";
+  import type { EventRef, PeriodicNoteCachedMetadata } from "obsidian";
+  import { Platform, debounce, App, TFile } from "obsidian";
   import type { Locale, Moment } from "moment";
-  import { setContext } from "svelte";
+  import { onDestroy, onMount, setContext } from "svelte";
   import { writable } from "svelte/store";
 
-  import type { IDayMetadata } from "src/types";
+  import type {
+    CalendarEventHandlers,
+    Granularity,
+    ICalendarSource,
+  } from "src/types";
 
-  import { DISPLAYED_MONTH, IS_MOBILE } from "../context";
-  import PopoverMenu from "./popover/PopoverMenu.svelte";
+  import { ACTIVE_FILE, DISPLAYED_MONTH, IS_MOBILE, TODAY } from "../context";
   import Day from "./Day.svelte";
   import Nav from "./Nav.svelte";
+  import Toolbar from "./Toolbar.svelte";
   import WeekNum from "./WeekNum.svelte";
-  import type { ICalendarSource, IMonth, ISourceSettings } from "../types";
+  import type { IMonth } from "../types";
   import { getDaysOfWeek, getMonth, isWeekend } from "../utils";
-  import PeriodicNotesCache from "../fileStore";
 
+  let today: Moment = window.moment();
+
+  export let isISO: boolean;
   export let localeData: Locale;
   export let showWeekNums: boolean = false;
-  export let eventHandlers: CallableFunction[];
+  export let eventHandlers: CalendarEventHandlers;
 
   // External sources (All optional)
   export let app: App;
   export let sources: ICalendarSource[] = [];
-  export let getSourceSettings: (sourceId: string) => ISourceSettings;
-  export let selectedId: string;
 
-  // Override-able local state
-  export let today: Moment = window.moment();
   export let displayedMonth: Moment = today;
 
-  setContext(IS_MOBILE, (window.app as any).isMobile);
-
+  // Override-able local state
   let displayedMonthStore = writable<Moment>(displayedMonth);
-  setContext(DISPLAYED_MONTH, displayedMonthStore);
-
+  let todayStore = writable<Moment>(today);
   let month: IMonth;
   let daysOfWeek: string[];
 
   let hoverTimeout: number;
   let showPopover: boolean = false;
-  let popoverMetadata: IDayMetadata[];
+  // let popoverMetadata: IDayMetadata[];
+  let activeFile = writable<TFile | null>(null);
   let hoveredDay = writable<HTMLElement>(null);
+  let selectedSourceIds: string[] = sources.map((s) => s.id);
+  let visibleSources: ICalendarSource[];
 
-  $: month = getMonth($displayedMonthStore, localeData);
-  $: daysOfWeek = getDaysOfWeek(today, localeData);
+  setContext(TODAY, todayStore);
+  setContext(IS_MOBILE, Platform.isMobile);
+  setContext(DISPLAYED_MONTH, displayedMonthStore);
+  setContext(ACTIVE_FILE, activeFile);
 
-  const fileCache = new PeriodicNotesCache(app, sources);
+  $: month = getMonth($displayedMonthStore, isISO, localeData);
+  $: daysOfWeek = getDaysOfWeek($todayStore, localeData);
+  $: visibleSources = sources;
 
   function openPopover() {
     showPopover = true;
+  }
+
+  function updateVisibleSources(event: CustomEvent) {
+    const { sourceId, isolated } = event.detail;
+    if (isolated) {
+      if (
+        selectedSourceIds.includes(sourceId) &&
+        selectedSourceIds.length === 1
+      ) {
+        // is isolated, select all
+        selectedSourceIds = sources.map((s) => s.id);
+      } else {
+        // not isolated, isolate
+        selectedSourceIds = [sourceId];
+      }
+    } else if (selectedSourceIds.includes(sourceId)) {
+      selectedSourceIds = selectedSourceIds.filter((s) => s !== sourceId);
+    } else {
+      selectedSourceIds = [...selectedSourceIds, sourceId];
+    }
+    visibleSources = sources.filter((s) => selectedSourceIds.includes(s.id));
   }
 
   function updatePopover(event: CustomEvent) {
@@ -82,71 +111,113 @@
     250,
     true
   );
+
+  const requestRefresh = debounce(() => {
+    console.info("[Calendar] refreshing view");
+    todayStore.set(window.moment());
+  }, 350);
+
+  const refreshMetadata = (
+    _granularity: Granularity,
+    _file: TFile,
+    metadata: PeriodicNoteCachedMetadata
+  ) => {
+    if (metadata.date.isSame($displayedMonthStore, "month")) {
+      requestRefresh();
+    }
+  };
+
+  const updateActiveFile = (file: TFile | null) => {
+    activeFile.set(file);
+  };
+
+  let unsubscribeFromCache: EventRef;
+  let unsubscribeFromFileOpen: EventRef;
+  onMount(() => {
+    app.workspace.onLayoutReady(requestRefresh);
+    unsubscribeFromCache = app.workspace.on(
+      "periodic-notes:file-modified",
+      refreshMetadata
+    );
+    unsubscribeFromFileOpen = app.workspace.on("file-open", updateActiveFile);
+  });
+
+  onDestroy(() => {
+    app.workspace.offref(unsubscribeFromCache);
+    app.workspace.offref(unsubscribeFromFileOpen);
+  });
 </script>
 
 <div id="calendar-container" class="container">
-  <Nav
-    fileCache="{fileCache}"
-    today="{today}"
-    getSourceSettings="{getSourceSettings}"
-    eventHandlers="{eventHandlers}"
-    on:hoverDay="{updatePopover}"
-    on:endHoverDay="{dismissPopover}"
+  <Toolbar
+    app="{app}"
+    sources="{sources}"
+    selectedSourceIds="{selectedSourceIds}"
+    on:changeSources="{updateVisibleSources}"
   />
-  <table class="calendar">
-    <colgroup>
-      {#if showWeekNums}
-        <col />
-      {/if}
-      {#each month[1].days as date}
-        <col class:weekend="{isWeekend(date)}" />
-      {/each}
-    </colgroup>
-    <thead>
-      <tr>
+  <div class="calendar-content">
+    <Nav
+      sources="{visibleSources}"
+      eventHandlers="{eventHandlers}"
+      on:hoverDay="{updatePopover}"
+      on:endHoverDay="{dismissPopover}"
+    />
+    <table class="calendar">
+      <colgroup>
         {#if showWeekNums}
-          <th>W</th>
+          <col />
         {/if}
-        {#each daysOfWeek as dayOfWeek}
-          <th>{dayOfWeek}</th>
+        {#each month[1].days as date}
+          <col class:weekend="{isWeekend(date)}" />
         {/each}
-      </tr>
-    </thead>
-    <tbody>
-      {#each month as week (week.weekNum)}
+      </colgroup>
+      <thead>
         <tr>
           {#if showWeekNums}
-            <WeekNum
-              fileCache="{fileCache}"
-              selectedId="{selectedId}"
-              getSourceSettings="{getSourceSettings}"
-              {...week}
-              {...eventHandlers}
-              on:hoverDay="{updatePopover}"
-              on:endHoverDay="{dismissPopover}"
-            />
+            <th>W</th>
           {/if}
-          {#each week.days as day (day.format())}
-            <Day
-              date="{day}"
-              fileCache="{fileCache}"
-              getSourceSettings="{getSourceSettings}"
-              today="{today}"
-              selectedId="{selectedId}"
-              {...eventHandlers}
-              on:hoverDay="{updatePopover}"
-              on:endHoverDay="{dismissPopover}"
-            />
+          {#each daysOfWeek as dayOfWeek}
+            <th>{dayOfWeek}</th>
           {/each}
         </tr>
-      {/each}
-    </tbody>
-  </table>
-  <PopoverMenu
+      </thead>
+      <tbody>
+        {#each month as week (week.weekNum)}
+          <tr>
+            {#if showWeekNums}
+              <WeekNum
+                days="{week.days}"
+                eventHandlers="{eventHandlers}"
+                sources="{visibleSources}"
+                weekNum="{week.weekNum}"
+                on:hoverDay="{updatePopover}"
+                on:endHoverDay="{dismissPopover}"
+              />
+            {/if}
+            {#each week.days as day (day.format())}
+              <Day
+                date="{day}"
+                sources="{visibleSources}"
+                eventHandlers="{eventHandlers}"
+                isActive="{$activeFile &&
+                  $activeFile ===
+                    app.plugins
+                      .getPlugin('periodic-notes')
+                      .getPeriodicNote('day', day)}"
+                on:hoverDay="{updatePopover}"
+                on:endHoverDay="{dismissPopover}"
+              />
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+  <!-- <PopoverMenu
     referenceElement="{$hoveredDay}"
     metadata="{popoverMetadata}"
     isVisible="{showPopover}"
-  />
+  /> -->
 </div>
 
 <style>
@@ -165,10 +236,13 @@
     --color-text-day: var(--text-normal);
     --color-text-today: var(--interactive-accent);
     --color-text-weeknum: var(--text-muted);
+
+    padding: 0 !important;
+    overflow-x: hidden;
   }
 
-  .container {
-    padding: 0 8px;
+  .calendar-content {
+    padding: 0 12px;
   }
 
   .weekend {
@@ -177,6 +251,7 @@
 
   .calendar {
     border-collapse: collapse;
+    table-layout: fixed;
     width: 100%;
   }
 

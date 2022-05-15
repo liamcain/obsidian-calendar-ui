@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { IDayMetadata } from "src/types";
+  type IDayMetadata = any;
 
   export let menuItems: IDayMetadata[];
 

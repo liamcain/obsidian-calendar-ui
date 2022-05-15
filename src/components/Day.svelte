@@ -2,81 +2,56 @@
 
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { TFile } from "obsidian";
-  import { getDateUID, IGranularity } from "obsidian-daily-notes-interface";
   import { createEventDispatcher, getContext } from "svelte";
   import type { Writable } from "svelte/store";
 
   import Dots from "./Dots.svelte";
   import MetadataResolver from "./MetadataResolver.svelte";
-  import { DISPLAYED_MONTH, IS_MOBILE } from "../context";
-  import type PeriodicNotesCache from "../fileStore";
+
+  import { DISPLAYED_MONTH, IS_MOBILE, TODAY } from "src/context";
   import type {
-    IDayMetadata,
-    IHTMLAttributes,
-    ISourceSettings,
-  } from "../types";
-  import { isMetaPressed } from "../utils";
+    CalendarEventHandlers,
+    ICalendarSource,
+    IEvaluatedMetadata,
+  } from "src/types";
+  import { evaluateMetadataFromSources } from "src/utils";
 
   // Properties
   export let date: Moment;
-  export let fileCache: PeriodicNotesCache;
-  export let getSourceSettings: (sourceId: string) => ISourceSettings;
+  export let sources: ICalendarSource[];
+  export let isActive: boolean;
 
-  let file: TFile | null;
-
-  export let onHover: (
-    periodicity: IGranularity,
-    date: Moment,
-    file: TFile,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ) => boolean;
-  export let onClick: (
-    granularity: IGranularity,
-    date: Moment,
-    existingFile: TFile,
-    inNewSplit: boolean
-  ) => boolean;
-  export let onContextMenu: (
-    granularity: IGranularity,
-    date: Moment,
-    file: TFile,
-    event: MouseEvent
-  ) => boolean;
+  export let eventHandlers: CalendarEventHandlers;
 
   // Global state
-  export let today: Moment;
-  export let selectedId: string = null;
+  const today = getContext<Writable<Moment>>(TODAY);
   const isMobile = getContext<boolean>(IS_MOBILE);
   const displayedMonth = getContext<Writable<Moment>>(DISPLAYED_MONTH);
   const dispatch = createEventDispatcher();
 
-  let metadata: Promise<IDayMetadata[]> | null;
+  let metadata: Promise<IEvaluatedMetadata>;
 
-  fileCache.store.subscribe(() => {
-    file = fileCache.getFile(date, "day");
-    metadata = fileCache.getEvaluatedMetadata("day", date, getSourceSettings);
-  });
+  $: metadata = evaluateMetadataFromSources(sources, "day", date, $today);
 
-  function handleClick(event: MouseEvent, meta: IDayMetadata) {
-    onClick?.("day", date, file, isMetaPressed(event));
-    if (isMobile) {
-      dispatch("hoverDay", {
-        date,
-        metadata: meta,
-        target: event.target,
-      });
-    }
+  function handleClick(event: MouseEvent) {
+    console.log("\n\nclicked", event);
+    eventHandlers.onClick?.("day", date, event);
+    // if (isMobile) {
+    //   dispatch("hoverDay", {
+    //     date,
+    //     metadata: meta,
+    //     target: event.target,
+    //   });
+    // }
   }
 
-  function handleHover(event: PointerEvent, meta: IDayMetadata) {
-    onHover?.("day", date, file, event.target, isMetaPressed(event));
-    dispatch("hoverDay", {
-      date,
-      metadata: meta,
-      target: event.target,
-    });
+  function handleHover(event: PointerEvent) {
+    eventHandlers.onHover?.("day", date, event);
+    // dispatch("hoverDay", {
+    //   date,
+    //   metadata: meta,
+    //   target: event.target,
+    // });
   }
 
   function endHover(event: MouseEvent) {
@@ -86,48 +61,40 @@
   }
 
   function handleContextmenu(event: MouseEvent) {
-    onContextMenu?.("day", date, file, event);
+    eventHandlers.onContextMenu?.("day", date, event);
     endHover(event);
-  }
-
-  function getAttributes(metadata: IDayMetadata[]): IHTMLAttributes {
-    if (!metadata) {
-      return {};
-    }
-    return metadata
-      .filter((meta) => meta.display === "calendar-and-menu")
-      .reduce((acc, meta) => {
-        return {
-          ...acc,
-          ...meta.attrs,
-        };
-      }, {});
   }
 </script>
 
-<td>
-  <MetadataResolver metadata="{metadata}" let:metadata>
-    <div
-      class="day"
-      class:active="{selectedId === getDateUID(date, 'day')}"
-      class:adjacent-month="{!date.isSame($displayedMonth, 'month')}"
-      class:has-note="{!!file}"
-      class:today="{date.isSame(today, 'day')}"
-      draggable="{true}"
-      {...getAttributes(metadata)}
-      on:click="{(event) => handleClick(event, metadata)}"
-      on:contextmenu="{handleContextmenu}"
-      on:pointerenter="{(event) => handleHover(event, metadata)}"
-      on:pointerleave="{endHover}"
-      on:dragstart="{(event) => fileCache.onDragStart(event, file)}"
-    >
-      {date.format("D")}
+<td class="day-container">
+  <div
+    class="day"
+    class:adjacent-month="{!date.isSame($displayedMonth, 'month')}"
+    class:today="{date.isSame($today, 'day')}"
+    class:active="{isActive}"
+    on:click="{handleClick}"
+    on:mousedown="{(e) => console.log('mousedown')}"
+    on:contextmenu="{handleContextmenu}"
+    on:pointerenter="{handleHover}"
+    on:pointerleave="{endHover}"
+  >
+    <!-- draggable="{true}" -->
+    <!--</div>="{date.isSame(today, 'day')}" -->
+    <!-- {...getAttributes(metadata)} -->
+    <!-- on:dragstart="{(event) => fileCache.onDragStart(event, file)}" -->
+    {date.format("D")}
+    <MetadataResolver metadata="{metadata}" let:metadata>
       <Dots metadata="{metadata}" />
-    </div>
-  </MetadataResolver>
+    </MetadataResolver>
+  </div>
 </td>
 
-<style>
+<style lang="scss">
+  .day-container {
+    height: 1px;
+    vertical-align: top;
+  }
+
   .day {
     background-color: var(--color-background-day);
     border-radius: 4px;
@@ -136,17 +103,22 @@
     font-size: 0.8em;
     height: 100%;
     padding: 4px;
-    position: relative;
     text-align: center;
     transition: background-color 0.1s ease-in, color 0.1s ease-in;
-    vertical-align: baseline;
-  }
-  .day:hover {
-    background-color: var(--interactive-hover);
-  }
 
-  .day.active:hover {
-    background-color: var(--interactive-accent-hover);
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    &.active,
+    &.active.today {
+      color: var(--text-on-accent);
+      background-color: var(--interactive-accent);
+    }
+
+    &.active:hover {
+      background-color: var(--interactive-accent-hover);
+    }
   }
 
   .adjacent-month {
@@ -155,12 +127,5 @@
 
   .today {
     color: var(--color-text-today);
-  }
-
-  .day:active,
-  .active,
-  .active.today {
-    color: var(--text-on-accent);
-    background-color: var(--interactive-accent);
   }
 </style>

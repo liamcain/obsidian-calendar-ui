@@ -1,21 +1,6 @@
-import type moment from "moment";
-import type { App } from "obsidian";
-
 import Calendar from "./components/Calendar.svelte";
-import type {
-  ICalendarSource,
-  IDot,
-  IDayMetadata,
-  ISourceSettings,
-} from "./types";
-
-declare global {
-  interface Window {
-    app: App;
-    moment: typeof moment;
-  }
-}
+import type { ICalendarSource, IDot, ISourceSettings } from "./types";
 
 export { Calendar };
-export type { ICalendarSource, IDot, IDayMetadata, ISourceSettings };
+export type { ICalendarSource, IDot, ISourceSettings };
 export { configureGlobalMomentLocale } from "./localization";

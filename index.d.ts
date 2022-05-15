@@ -1,6 +1,5 @@
 import type { Locale, Moment } from "moment";
 import type { App, TFile } from "obsidian";
-import type { IGranularity } from "obsidian-daily-notes-interface";
 import { SvelteComponentTyped } from "svelte";
 
 export type ILocaleOverride = "system-default" | string;
@@ -19,9 +18,10 @@ export interface IDot {
 }
 
 export interface IEvaluatedMetadata {
-  value: number | string;
-  goal?: number;
+  attrs?: IHTMLAttributes;
   dots: IDot[];
+  goal?: number;
+  value: number | string;
 }
 
 export type ISourceDisplayOption = "calendar-and-menu" | "menu" | "none";
@@ -32,21 +32,12 @@ export interface ISourceSettings {
   order: number;
 }
 
-export interface IDayMetadata
-  extends ICalendarSource,
-    ISourceSettings,
-    IEvaluatedMetadata {}
-
 export interface ICalendarSource {
   id: string;
   name: string;
   description?: string;
 
-  getMetadata?: (
-    granularity: IGranularity,
-    date: Moment,
-    file: TFile
-  ) => Promise<IEvaluatedMetadata>;
+  getMetadata: (granularity: Granularity, date: Moment) => Promise<IEvaluatedMetadata>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultSettings: any;
@@ -58,13 +49,6 @@ export interface ICalendarSource {
 }
 
 export type IHTMLAttributes = Record<string, string | number | boolean>;
-
-export interface IEvaluatedMetadata {
-  value: number;
-  goal?: number;
-  dots: IDot[];
-  attrs?: IHTMLAttributes;
-}
 
 export interface ISourceSettings {
   color: string;
@@ -79,14 +63,14 @@ export interface IDayMetadata
 
 export class Calendar extends SvelteComponentTyped<{
   app: App;
+  isISO: boolean;
   showWeekNums: boolean;
   localeData?: Locale;
-  eventHandlers: CallableFunction[];
+  eventHandlers: CalendarEventHandlers;
 
   // External sources
   selectedId?: string | null;
   sources?: ICalendarSource[];
-  getSourceSettings: (sourceId: string) => ISourceSettings;
 
   // Override-able local state
   today?: Moment;
@@ -97,3 +81,16 @@ export function configureGlobalMomentLocale(
   localeOverride: ILocaleOverride,
   weekStart: IWeekStartOption
 ): string;
+
+export type Granularity =
+  | "day"
+  | "week"
+  | "month"
+  | "quarter"
+  | "year"; /*| "fiscal-year" */
+
+export interface CalendarEventHandlers {
+  onHover?: (periodicity: Granularity, date: Moment, event: PointerEvent) => boolean;
+  onClick?: (granularity: Granularity, date: Moment, event: MouseEvent) => boolean;
+  onContextMenu?: (granularity: Granularity, date: Moment, event: MouseEvent) => boolean;
+}

@@ -22,7 +22,7 @@
   >
 </div>
 
-<style>
+<style lang="scss">
   .arrow {
     align-items: center;
     cursor: pointer;
@@ -37,7 +37,7 @@
 
   .arrow svg {
     color: var(--color-arrow);
-    height: 16px;
-    width: 16px;
+    height: 14px;
+    width: 14px;
   }
 </style>

@@ -3,19 +3,19 @@
   import type { Writable } from "svelte/store";
   import type { Moment } from "moment";
 
+  import { DISPLAYED_MONTH, TODAY } from "src/context";
+  import type { CalendarEventHandlers, ICalendarSource } from "src/types";
+
   import Arrow from "./Arrow.svelte";
-  import type PeriodicNotesCache from "../fileStore";
-  import { DISPLAYED_MONTH } from "../context";
   import Dot from "./Dot.svelte";
   import Month from "./Month.svelte";
-  import type { ISourceSettings } from "../types";
 
-  export let getSourceSettings: (sourceId: string) => ISourceSettings;
-  export let fileCache: PeriodicNotesCache;
-  export let today: Moment;
-  export let eventHandlers: CallableFunction[];
+  export let sources: ICalendarSource[];
+  export let eventHandlers: CalendarEventHandlers;
 
+  let today = getContext<Writable<Moment>>(TODAY);
   let displayedMonth = getContext<Writable<Moment>>(DISPLAYED_MONTH);
+  let showingCurrentMonth: boolean;
 
   function incrementDisplayedMonth() {
     displayedMonth.update((month) => month.clone().add(1, "month"));
@@ -26,19 +26,16 @@
   }
 
   function resetDisplayedMonth() {
-    displayedMonth.set(today.clone());
+    displayedMonth.set($today.clone());
   }
 
-  let showingCurrentMonth: boolean;
-  $: showingCurrentMonth = $displayedMonth.isSame(today, "month");
+  $: showingCurrentMonth = $displayedMonth.isSame($today, "month");
 </script>
 
 <div class="nav">
   <Month
-    fileCache="{fileCache}"
-    getSourceSettings="{getSourceSettings}"
-    resetDisplayedMonth="{resetDisplayedMonth}"
-    {...eventHandlers}
+    sources="{sources}"
+    eventHandlers="{eventHandlers}"
     on:hoverDay
     on:endHoverDay
   />
@@ -64,12 +61,12 @@
   </div>
 </div>
 
-<style>
+<style lang="scss">
   .nav {
     align-items: baseline;
     display: flex;
     margin: 0.6em 0 1em;
-    padding: 0 8px;
+    padding: 0 12px;
     width: 100%;
   }
 
@@ -86,10 +83,10 @@
     display: flex;
     opacity: 0.4;
     padding: 0.5em;
-  }
 
-  .reset-button.active {
-    cursor: pointer;
-    opacity: 1;
+    &.active {
+      cursor: pointer;
+      opacity: 1;
+    }
   }
 </style>

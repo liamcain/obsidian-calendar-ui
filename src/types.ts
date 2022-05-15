@@ -1,6 +1,4 @@
 import type { Moment } from "moment";
-import type { TFile } from "obsidian";
-import type { IGranularity } from "obsidian-daily-notes-interface";
 
 export interface IDot {
   isFilled: boolean;
@@ -40,11 +38,7 @@ export interface ICalendarSource {
   name: string;
   description?: string;
 
-  getMetadata?: (
-    granularity: IGranularity,
-    date: Moment,
-    file: TFile
-  ) => Promise<IEvaluatedMetadata>;
+  getMetadata?: (granularity: Granularity, date: Moment) => Promise<IEvaluatedMetadata>;
 
   defaultSettings: Record<string, string | number>;
   registerSettings?: (
@@ -52,4 +46,17 @@ export interface ICalendarSource {
     settings: ISourceSettings,
     saveSettings: (settings: Partial<ISourceSettings>) => void
   ) => void;
+}
+
+export type Granularity =
+  | "day"
+  | "week"
+  | "month"
+  | "quarter"
+  | "year"; /*| "fiscal-year" */
+
+export interface CalendarEventHandlers {
+  onHover?: (periodicity: Granularity, date: Moment, event: PointerEvent) => boolean;
+  onClick?: (granularity: Granularity, date: Moment, event: MouseEvent) => boolean;
+  onContextMenu?: (granularity: Granularity, date: Moment, event: MouseEvent) => boolean;
 }
