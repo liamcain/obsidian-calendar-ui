@@ -13,6 +13,7 @@
   export let weekNum: number;
   export let days: Moment[];
   export let metadata: Promise<IDayMetadata> | null;
+  export let gridRight: boolean;
 
   // Event handlers
   export let onHover: (
@@ -30,7 +31,7 @@
   $: startOfWeek = getStartOfWeek(days);
 </script>
 
-<td>
+<td class="{gridRight ? 'grid-right' : 'grid-left'}">
   <MetadataResolver metadata="{metadata}" let:metadata>
     <div
       class="{`week-num ${metadata.classes.join(' ')}`}"
@@ -51,8 +52,11 @@
 </td>
 
 <style>
-  td {
+  td.grid-right {
     border-right: 1px solid var(--background-modifier-border);
+  }
+  td.grid-left {
+    border-left: 1px solid var(--background-modifier-border);
   }
 
   .week-num {

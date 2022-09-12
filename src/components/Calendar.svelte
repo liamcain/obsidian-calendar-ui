@@ -108,6 +108,7 @@
               onContextMenu="{onContextMenuWeek}"
               onHover="{onHoverWeek}"
               selectedId="{selectedId}"
+              gridRight="{!showWeekNumsRight}"
             />
           {/if}
           {#each week.days as day (day.format())}
@@ -130,6 +131,7 @@
                 onContextMenu="{onContextMenuWeek}"
                 onHover="{onHoverWeek}"
                 selectedId="{selectedId}"
+                gridRight="{!showWeekNumsRight}"
             />
           {/if}
         </tr>
