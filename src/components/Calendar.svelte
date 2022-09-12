@@ -74,27 +74,33 @@
   />
   <table class="calendar">
     <colgroup>
-      {#if showWeekNums}
+      {#if showWeekNums && !showWeekNumsRight}
         <col />
       {/if}
       {#each month[1].days as date}
         <col class:weekend="{isWeekend(date)}" />
       {/each}
+      {#if showWeekNums && showWeekNumsRight}
+        <col />
+      {/if}
     </colgroup>
     <thead>
       <tr>
-        {#if showWeekNums}
+        {#if showWeekNums && !showWeekNumsRight}
           <th>W</th>
         {/if}
         {#each daysOfWeek as dayOfWeek}
           <th>{dayOfWeek}</th>
         {/each}
+        {#if showWeekNums && showWeekNumsRight}
+          <th>W</th>
+        {/if}
       </tr>
     </thead>
     <tbody>
       {#each month as week (week.weekNum)}
         <tr>
-          {#if showWeekNums}
+          {#if showWeekNums && !showWeekNumsRight}
             <WeekNum
               {...week}
               metadata="{getWeeklyMetadata(sources, week.days[0], today)}"
@@ -116,6 +122,16 @@
               selectedId="{selectedId}"
             />
           {/each}
+          {#if showWeekNums && showWeekNumsRight}
+            <WeekNum
+                {...week}
+                metadata="{getWeeklyMetadata(sources, week.days[0], today)}"
+                onClick="{onClickWeek}"
+                onContextMenu="{onContextMenuWeek}"
+                onHover="{onHoverWeek}"
+                selectedId="{selectedId}"
+            />
+          {/if}
         </tr>
       {/each}
     </tbody>
