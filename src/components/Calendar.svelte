@@ -15,6 +15,7 @@
 
   // Settings
   export let showWeekNums: boolean = false;
+  export let showWeekNumsRight: boolean = false;
 
   // Event Handlers
   export let onHoverDay: (
