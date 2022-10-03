@@ -39,7 +39,7 @@ export function getMonth(displayedMonth: Moment, ..._args: unknown[]): IMonth {
     if (_day % 7 === 0) {
       week = {
         days: [],
-        weekNum: date.week(),
+        weekNum: date.isoWeek(),
       };
       month.push(week);
     }
