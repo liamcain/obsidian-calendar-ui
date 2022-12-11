@@ -18,6 +18,7 @@ describe("getMonth", () => {
 
       const monthData = getMonth(
         moment({ year: 2020, month: 0, day: 1 }),
+        false,
         "sunday"
       );
 
@@ -39,6 +40,7 @@ describe("getMonth", () => {
 
       const monthData = getMonth(
         moment({ year: 2020, month: 0, day: 1 }),
+        false,
         "monday"
       );
 
@@ -62,6 +64,7 @@ describe("getMonth", () => {
 
       const monthData = getMonth(
         moment({ year: 2020, month: 1, day: 1 }),
+        false,
         "sunday"
       );
 
@@ -83,6 +86,7 @@ describe("getMonth", () => {
 
       const monthData = getMonth(
         moment({ year: 2020, month: 1, day: 1 }),
+        false,
         "monday"
       );
 

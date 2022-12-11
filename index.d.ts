@@ -32,6 +32,7 @@ export interface ICalendarSource {
 export class Calendar extends SvelteComponentTyped<{
   // Settings
   showWeekNums: boolean;
+  useISOWeekNumber: boolean;
   localeData?: Locale;
 
   // Event Handlers

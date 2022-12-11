@@ -26,7 +26,7 @@ export function getStartOfWeek(days: Moment[]): Moment {
  * Generate a 2D array of daily information to power
  * the calendar view.
  */
-export function getMonth(displayedMonth: Moment, ..._args: unknown[]): IMonth {
+export function getMonth(displayedMonth: Moment, useISOWeekNumber: boolean, ..._args: unknown[]): IMonth {
   const locale = window.moment().locale();
   const month = [];
   let week: IWeek;
@@ -39,7 +39,7 @@ export function getMonth(displayedMonth: Moment, ..._args: unknown[]): IMonth {
     if (_day % 7 === 0) {
       week = {
         days: [],
-        weekNum: date.week(),
+        weekNum: useISOWeekNumber ? date.isoWeek() : date.week(),
       };
       month.push(week);
     }

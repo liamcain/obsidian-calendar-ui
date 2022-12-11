@@ -15,6 +15,7 @@
 
   // Settings
   export let showWeekNums: boolean = false;
+  export let useISOWeekNumber: boolean = false;
 
   // Event Handlers
   export let onHoverDay: (
@@ -46,7 +47,7 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let isMobile = (window.app as any).isMobile;
 
-  $: month = getMonth(displayedMonth, localeData);
+  $: month = getMonth(displayedMonth, useISOWeekNumber, localeData);
   $: daysOfWeek = getDaysOfWeek(today, localeData);
 
   // Exports
