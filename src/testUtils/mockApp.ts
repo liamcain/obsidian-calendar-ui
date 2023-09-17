@@ -20,6 +20,9 @@ const mockApp: App = {
       remove: () => Promise.resolve(),
       rename: () => Promise.resolve(),
       copy: () => Promise.resolve(),
+      stat: () => Promise.resolve(null),
+      append: () => Promise.resolve(),
+      process: () => Promise.resolve(null),
     },
     getName: () => "",
     getAbstractFileByPath: () => null,
@@ -52,6 +55,8 @@ const mockApp: App = {
     offref: () => null,
     tryTrigger: () => null,
     trigger: () => null,
+    append: () => Promise.resolve(),
+    process: () => Promise.resolve(null),
   },
   workspace: null,
   metadataCache: {

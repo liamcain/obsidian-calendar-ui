@@ -18,7 +18,7 @@
     "@popperjs/core": "2.9.2",
     "@popperjs/svelte": "0.1.1",
     "obsidian-daily-notes-interface": "0.9.2",
-    "svelte": "3.49.0",
+    "svelte": "^3.59.2",
     "svelte-portal": "2.1.2",
     "tslib": "2.2.0"
   },
@@ -33,7 +33,7 @@
     "@typescript-eslint/parser": "4.21.0",
     "eslint": "7.24.0",
     "jest": "26.6.3",
-    "moment": "2.29.1",
+    "moment": "^2.29.4",
     "obsidian": "obsidianmd/obsidian-api#master",
     "rollup": "2.45.1",
     "rollup-plugin-svelte": "7.1.0",
